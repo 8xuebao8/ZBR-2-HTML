@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>分光镜 Spectroscope · 宝石仪器实验室</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="lang-both">
+  <header id="topbar"></header>
+  <main class="inst-layout">
+    <section class="viewer-wrap">
+      <div id="viewer" class="viewer"></div>
+      <div class="viewer-badge" id="badge"></div>
+      <div class="viewer-hint"><span class="zh">拖动旋转 · 滚轮缩放 · 点击部件查看名称</span><span class="en">Drag to rotate · scroll to zoom · click a part</span></div>
+      <div id="part-card" class="part-card hidden"></div>
+    </section>
+
+    <aside class="panel">
+      <h1>🌈 <span class="zh">分光镜</span><span class="en">Spectroscope</span></h1>
+      <p class="lead zh">把白光分解成彩虹色的光谱。宝石吸收了哪些波长，光谱上就会出现对应的暗线或暗带，由此推断致色元素。</p>
+      <p class="lead en">Splits white light into a rainbow. Wavelengths the gem absorbs show up as dark lines or bands, which point to the colouring element.</p>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="sim"><span class="zh">模拟操作</span><span class="en">Simulation</span></button>
+        <button class="tab-btn" data-tab="theory"><span class="zh">原理</span><span class="en">Principle</span></button>
+        <button class="tab-btn" data-tab="steps"><span class="zh">操作步骤</span><span class="en">How to use</span></button>
+        <button class="tab-btn" data-tab="parts"><span class="zh">部件</span><span class="en">Parts</span></button>
+        <button class="tab-btn" data-tab="quiz"><span class="zh">测验</span><span class="en">Quiz</span></button>
+      </div>
+
+      <div class="tab-body active" id="tab-sim">
+        <div class="ctrl-group">
+          <div class="ctrl-label"><span><span class="zh">选择宝石</span><span class="en">Choose a gem</span></span></div>
+          <div id="gem-picker"></div>
+        </div>
+        <div class="ctrl-group">
+          <div class="ctrl-label"><span><span class="zh">分光镜类型</span><span class="en">Type</span></span></div>
+          <div id="type"></div>
+        </div>
+        <div class="ctrl-group">
+          <div class="ctrl-label"><span><span class="zh">照明方法</span><span class="en">Lighting method</span></span></div>
+          <div id="method"></div>
+        </div>
+        <div class="ctrl-group">
+          <div class="ctrl-label"><span><span class="zh">狭缝宽度</span><span class="en">Slit width</span></span><b id="slit-val"></b></div>
+          <input type="range" id="slit" min="0" max="100" value="35">
+        </div>
+        <div class="ctrl-group">
+          <div class="ctrl-label"><span><span class="zh">调焦（拉动镜筒）</span><span class="en">Focus (draw tube)</span></span></div>
+          <input type="range" id="focus" min="0" max="100" value="50">
+        </div>
+        <label class="check"><input type="checkbox" id="ann"> <span class="zh">标注吸收线位置</span><span class="en">Label the absorption features</span></label>
+
+        <div class="obs">
+          <div class="obs-title"><span><span class="zh">目镜中的光谱</span><span class="en">Spectrum in the eyepiece</span></span><span id="hover-nm"></span></div>
+          <canvas id="spec" class="wide" style="height:170px;cursor:crosshair"></canvas>
+        </div>
+        <div id="result" class="result"></div>
+      </div>
+
+      <div class="tab-body" id="tab-theory">
+        <h3><span class="zh">光谱是怎么来的？</span><span class="en">Where does the spectrum come from?</span></h3>
+        <p class="zh">白光由红、橙、黄、绿、蓝、紫各种波长（约 400–700nm）的光组成。分光镜里的棱镜或光栅把它们按波长分开排成彩带。</p>
+        <p class="en">White light contains every wavelength from about 400 nm (violet) to 700 nm (red). A prism or grating spreads them out into a band of colour.</p>
+        <h3><span class="zh">为什么会有黑线？</span><span class="en">Why are there dark lines?</span></h3>
+        <p class="zh">宝石中的致色元素会吸收特定波长的光，那些位置在光谱上就变暗了。我们看到的宝石颜色，是没被吸收的光混合出来的颜色。</p>
+        <p class="en">Colouring elements absorb particular wavelengths, which go dark in the spectrum. The colour we see is the mixture of the light that is left.</p>
+        <h3><span class="zh">常见致色元素的光谱</span><span class="en">Typical spectra by element</span></h3>
+        <ul>
+          <li class="zh"><b>铬 Cr</b>：红区有锐利的细线（红宝石 694nm、祖母绿 683/680nm），黄绿区宽吸收带。</li>
+          <li class="en"><b>Chromium</b>: sharp lines in the red (ruby 694 nm, emerald 683/680 nm) plus a broad yellow-green band.</li>
+          <li class="zh"><b>铁 Fe</b>：蓝、蓝绿区的吸收带（蓝宝石 450nm、橄榄石 453/473/493nm、铁铝榴石 505/527/576nm）。</li>
+          <li class="en"><b>Iron</b>: bands in the blue and blue-green (sapphire 450 nm, peridot 453/473/493 nm, almandine 505/527/576 nm).</li>
+          <li class="zh"><b>钴 Co</b>：黄、绿、蓝区三条宽带，见于合成蓝色尖晶石和钴玻璃。</li>
+          <li class="en"><b>Cobalt</b>: three broad bands in the yellow, green and blue: synthetic blue spinel and cobalt glass.</li>
+        </ul>
+        <h3><span class="zh">棱镜式与光栅式</span><span class="en">Prism vs diffraction grating</span></h3>
+        <p class="zh">棱镜式：光谱明亮，但蓝紫区被拉宽、红区被压缩。光栅式：各波段间距均匀，便于读数，但亮度较低。</p>
+        <p class="en">Prism: bright, but the blue end is stretched and the red end squeezed. Grating: evenly spaced and easy to read, but dimmer.</p>
+      </div>
+
+      <div class="tab-body" id="tab-steps">
+        <ol class="steps">
+          <li><span class="zh">在暗环境中使用强白光（光纤冷光源最好，避免宝石发热）。</span><span class="en">Work in a darkened room with a strong white light (a cold fibre-optic light is best).</span></li>
+          <li><span class="zh">透明宝石用透射法：光从下方穿过宝石射入分光镜。</span><span class="en">Transparent stones: transmitted light, shining up through the stone into the spectroscope.</span></li>
+          <li><span class="zh">不透明或颜色深的宝石用反射法：光从侧面照到宝石表面，分光镜接收反射光。</span><span class="en">Opaque or dark stones: reflected light from the surface into the spectroscope.</span></li>
+          <li><span class="zh">调节狭缝：太窄太暗，太宽线条模糊。先开大找到光谱，再关窄看细线。</span><span class="en">Adjust the slit: too narrow is dark, too wide is blurred. Open it to find the spectrum, then close it for fine lines.</span></li>
+          <li><span class="zh">拉动镜筒调焦，使谱线清晰。</span><span class="en">Slide the draw tube to focus the lines.</span></li>
+          <li><span class="zh">从红端到紫端依次观察并记录吸收线位置。</span><span class="en">Scan from red to violet and note where the absorption is.</span></li>
+        </ol>
+      </div>
+
+      <div class="tab-body" id="tab-parts"><div id="parts-list"></div></div>
+      <div class="tab-body" id="tab-quiz"><div id="quiz"></div></div>
+    </aside>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="assets/js/core.js"></script>
+  <script src="assets/js/gems.js"></script>
+  <script src="assets/js/viewer3d.js"></script>
+  <script src="assets/js/spectroscope.js"></script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>宝石仪器实验室 Gem Instrument Lab</title>
+  <meta name="description" content="宝石鉴定仪器 3D 互动教学：显微镜、折射仪、偏光镜、分光镜、查尔斯滤色镜、紫外荧光灯、静水力学天平。Interactive 3D lessons on gem-testing instruments.">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="lang-both">
+  <header id="topbar"></header>
+
+  <section class="home-hero">
+    <div>
+      <h1>💎 <span class="zh">宝石仪器实验室</span><span class="en">Gem Instrument Lab</span></h1>
+      <p class="zh">七种常用宝石鉴定仪器的 3D 互动教学。每种仪器都可以旋转观察、点击部件、动手模拟操作，并配有原理讲解和小测验。</p>
+      <p class="en">Interactive 3D lessons on seven essential gem-testing instruments. Rotate each model, click its parts, try a hands-on simulation, then read the principle and take a short quiz.</p>
+      <div class="btn-row" style="margin-top:16px">
+        <a class="btn primary" href="microscope.html">▶ <span class="zh">从显微镜开始</span><span class="en">Start with the microscope</span></a>
+        <a class="btn" href="#gems"><span class="zh">宝石数据表</span><span class="en">Gem data table</span></a>
+      </div>
+    </div>
+    <div class="hero-3d" id="hero"></div>
+  </section>
+
+  <div class="container">
+    <h2 class="section-title"><span class="zh">仪器</span><span class="en">Instruments</span></h2>
+    <div class="cards" id="cards"></div>
+
+    <h2 class="section-title"><span class="zh">建议的鉴定顺序</span><span class="en">A suggested testing order</span></h2>
+    <ol class="steps" style="max-width:820px">
+      <li><span class="zh"><b>肉眼与放大观察</b>：先看颜色、光泽、切工，再用显微镜看内含物。</span><span class="en"><b>Look and magnify</b>: colour, lustre and cut first, then inclusions under the microscope.</span></li>
+      <li><span class="zh"><b>折射仪</b>：测折射率和双折射率，这是最关键的数据。</span><span class="en"><b>Refractometer</b>: RI and birefringence, usually the most decisive data.</span></li>
+      <li><span class="zh"><b>偏光镜</b>：确认单折射、双折射还是集合体。</span><span class="en"><b>Polariscope</b>: confirm SR, DR or aggregate.</span></li>
+      <li><span class="zh"><b>分光镜、滤色镜</b>：了解致色元素。</span><span class="en"><b>Spectroscope and Chelsea filter</b>: find the colouring element.</span></li>
+      <li><span class="zh"><b>紫外荧光灯</b>：辅助判断，特别是合成与处理。</span><span class="en"><b>UV lamp</b>: supporting evidence, especially for synthetics and treatments.</span></li>
+      <li><span class="zh"><b>静水称重</b>：测相对密度，适合未镶嵌的宝石。</span><span class="en"><b>Hydrostatic balance</b>: SG, for loose stones only.</span></li>
+    </ol>
+    <p class="note zh">记住：任何一种仪器都不能单独下结论，要把几项结果结合起来判断。</p>
+    <p class="note en">Remember: no single instrument proves an identity. Combine the results.</p>
+
+    <h2 class="section-title" id="gems"><span class="zh">本站使用的宝石数据</span><span class="en">Gem data used on this site</span></h2>
+    <div class="table-scroll"><table class="data" id="gem-table"></table></div>
+    <p class="note zh" style="margin-top:8px">数值为入门教学用的典型值，实际宝石会有一定范围的变化。</p>
+    <p class="note en">Values are typical textbook figures for beginners; real stones vary within a range.</p>
+  </div>
+
+  <footer class="footer">
+    <span class="zh">宝石仪器实验室 · 纯静态网页，可直接部署到 GitHub Pages · 3D 引擎 Three.js</span>
+    <span class="en">Gem Instrument Lab · static site for GitHub Pages · 3D by Three.js</span>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="assets/js/core.js"></script>
+  <script src="assets/js/gems.js"></script>
+  <script src="assets/js/viewer3d.js"></script>
+  <script>
+    (function () {
+      const G = GemLab, T = G.T;
+      G.buildHeader('');
+
+      G.$('#cards').innerHTML = G.instruments.map((i, k) => `
+        <a class="card" href="${i.file}">
+          <div class="icon">${i.icon}</div>
+          <h3>${T(i.zh, i.en)}</h3>
+          <p>${T(i.dzh, i.den)}</p>
+        </a>`).join('');
+
+      G.$('#gem-table').innerHTML =
+        `<tr><th>${T('宝石', 'Gem')}</th><th>${T('光性', 'Optic character')}</th><th>RI</th><th>DR</th><th>SG</th>
+         <th>${T('滤色镜', 'Chelsea')}</th><th>${T('长波 LW', 'LW UV')}</th><th>${T('特征内含物', 'Key inclusions')}</th></tr>` +
+        G.gems.map((g) => `<tr>
+          <td><span class="chip" style="pointer-events:none"><span class="dot" style="background:${g.css}"></span>${T(g.zh, g.en)}</span></td>
+          <td>${G.opticText(g)}</td><td class="num">${G.riText(g)}</td>
+          <td class="num">${g.dr ? g.dr.toFixed(3) : '—'}</td><td class="num">${g.sg.toFixed(2)}</td>
+          <td>${T(g.chelsea.zh, g.chelsea.en)}</td><td>${T(g.uvNote.zh.split('，')[0], g.uvNote.en.split(',')[0])}</td>
+          <td>${T(g.incNote.zh, g.incNote.en)}</td></tr>`).join('');
+
+      // 首页旋转宝石 Spinning hero gems
+      const v = new G.Viewer(G.$('#hero'), { cam: [0, 1.6, 4.2], target: [0, 0.6, 0], floor: false, autoRotate: true, minD: 2.5, maxD: 8 });
+      v.controls.enableZoom = false;
+      const picks = ['ruby', 'emerald', 'sapphire', 'diamond', 'amethyst'];
+      picks.forEach((id, k) => {
+        const g = G.makeGem(G.gemById(id), id === 'diamond' ? 1.1 : 0.6);
+        const a = (k / picks.length) * Math.PI * 2;
+        g.position.set(id === 'diamond' ? 0 : Math.cos(a) * 1.5, id === 'diamond' ? 0.75 : 0.45, id === 'diamond' ? 0 : Math.sin(a) * 1.5);
+        v.add(g);
+        v.tick((dt, t) => { g.rotation.y = t * 0.6 + k; g.position.y += Math.sin(t * 1.5 + k) * 0.0015; });
+      });
+      const pl = new THREE.PointLight(0xffffff, 0.8, 10);
+      pl.position.set(2, 3, 2);
+      v.add(pl);
+    })();
+  </script>
+</body>
+</html>

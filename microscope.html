@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>宝石显微镜 Gem Microscope · 宝石仪器实验室</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="lang-both">
+  <header id="topbar"></header>
+  <main class="inst-layout">
+    <section class="viewer-wrap">
+      <div id="viewer" class="viewer"></div>
+      <div class="viewer-badge" id="badge"></div>
+      <div class="viewer-hint"><span class="zh">拖动旋转 · 滚轮缩放 · 点击部件查看名称</span><span class="en">Drag to rotate · scroll to zoom · click a part</span></div>
+      <div id="part-card" class="part-card hidden"></div>
+    </section>
+
+    <aside class="panel">
+      <h1>🔬 <span class="zh">宝石显微镜</span><span class="en">Gem Microscope</span></h1>
+      <p class="lead zh">双目立体变焦显微镜，能放大 10–60 倍，是观察宝石内含物、判断天然与合成的最重要工具。</p>
+      <p class="lead en">A binocular zoom microscope (10–60×), the key tool for studying inclusions and telling natural from synthetic.</p>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="sim"><span class="zh">模拟操作</span><span class="en">Simulation</span></button>
+        <button class="tab-btn" data-tab="theory"><span class="zh">原理</span><span class="en">Principle</span></button>
+        <button class="tab-btn" data-tab="steps"><span class="zh">操作步骤</span><span class="en">How to use</span></button>
+        <button class="tab-btn" data-tab="parts"><span class="zh">部件</span><span class="en">Parts</span></button>
+        <button class="tab-btn" data-tab="quiz"><span class="zh">测验</span><span class="en">Quiz</span></button>
+      </div>
+
+      <div class="tab-body active" id="tab-sim">
+        <div class="ctrl-group">
+          <div class="ctrl-label"><span><span class="zh">选择宝石</span><span class="en">Choose a gem</span></span></div>
+          <div id="gem-picker"></div>
+        </div>
+        <div class="ctrl-group">
+          <div class="ctrl-label"><span><span class="zh">光源</span><span class="en">Light</span></span></div>
+          <div id="power"></div>
+        </div>
+        <div class="ctrl-group">
+          <div class="ctrl-label"><span><span class="zh">照明方式</span><span class="en">Illumination</span></span></div>
+          <div id="illum"></div>
+        </div>
+        <div class="ctrl-group">
+          <div class="ctrl-label"><span><span class="zh">放大倍数</span><span class="en">Magnification</span></span><b id="zoom-val"></b></div>
+          <input type="range" id="zoom" min="10" max="60" step="1" value="15">
+        </div>
+        <div class="ctrl-group">
+          <div class="ctrl-label"><span><span class="zh">调焦（焦平面深度）</span><span class="en">Focus (depth of focal plane)</span></span><b id="focus-val"></b></div>
+          <input type="range" id="focus" min="0" max="100" step="1" value="20">
+        </div>
+        <div class="obs">
+          <div class="obs-title"><span><span class="zh">目镜中看到的</span><span class="en">View through the eyepieces</span></span><span id="obs-mode"></span></div>
+          <div class="eyepiece"><canvas id="layer-face"></canvas><canvas id="layer-inc"></canvas><div class="vignette"></div></div>
+        </div>
+        <div id="result" class="result"></div>
+        <p class="note zh">提示：先把焦点放在表面（台面），再慢慢往下调焦，内含物会在宝石内部某个深度变清楚。</p>
+        <p class="note en">Tip: focus on the table first, then slowly focus deeper. Inclusions sharpen at their own depth inside the stone.</p>
+      </div>
+
+      <div class="tab-body" id="tab-theory">
+        <h3><span class="zh">为什么要放大观察？</span><span class="en">Why magnify?</span></h3>
+        <p class="zh">宝石内部的“内含物”（包裹体）就像宝石的指纹，记录了它的生长环境。天然宝石、合成宝石和仿制品的内含物往往完全不同，所以放大观察是鉴定的第一步。</p>
+        <p class="en">Inclusions are a gem’s fingerprints: they record how it grew. Natural, synthetic and imitation stones usually have very different inclusions, so magnification is the first step of any identification.</p>
+        <h3><span class="zh">三种照明方式</span><span class="en">Three kinds of lighting</span></h3>
+        <ul>
+          <li><b>暗域照明 Darkfield</b>
+            <div class="zh">底座中心的挡板挡住直射光，只让光线从侧面斜射进宝石。背景是黑的，内含物把光散射出来而发亮，最容易发现。</div>
+            <div class="en">A baffle blocks direct light, so light enters the stone from the sides only. The background is black and inclusions scatter light and glow, so they are easy to spot.</div></li>
+          <li><b>亮域照明 Brightfield</b>
+            <div class="zh">光线从下方直接穿过宝石，背景明亮，内含物显示为暗色轮廓。适合观察色带、弧形生长纹。</div>
+            <div class="en">Light passes straight up through the stone; inclusions appear dark on a bright background. Good for colour zoning and curved striae.</div></li>
+          <li><b>顶光 / 反射光 Overhead (reflected)</b>
+            <div class="zh">从上方照射，看宝石表面：抛光痕、刻面棱是否锐利、表面坑点、拼合石的接合面等。</div>
+            <div class="en">Light from above shows the surface: polish marks, facet edges, pits and the join of composite stones.</div></li>
+        </ul>
+        <h3><span class="zh">放大倍数</span><span class="en">Magnification</span></h3>
+        <p class="zh">总放大倍数 = 目镜倍数 × 物镜（变焦）倍数。一般先用低倍（10×）找到目标，再升高倍数细看。10 倍放大镜是钻石分级的标准倍数。</p>
+        <p class="en">Total magnification = eyepiece × objective (zoom). Find features at low power (10×), then zoom in. A 10× loupe is the standard for diamond clarity grading.</p>
+      </div>
+
+      <div class="tab-body" id="tab-steps">
+        <ol class="steps">
+          <li><span class="zh">清洁宝石，用宝石夹夹住宝石腰棱。</span><span class="en">Clean the stone and hold it by the girdle in the stone holder.</span></li>
+          <li><span class="zh">打开光源，选择暗域照明，关小光阑。</span><span class="en">Switch on the light, choose darkfield and close the iris a little.</span></li>
+          <li><span class="zh">从最低倍数开始，调焦看清宝石轮廓和台面。</span><span class="en">Start at the lowest power and focus on the outline and table.</span></li>
+          <li><span class="zh">慢慢向下调焦，一层一层扫描宝石内部。</span><span class="en">Focus down slowly, scanning the stone layer by layer.</span></li>
+          <li><span class="zh">发现内含物后提高倍数，重新调焦细看。</span><span class="en">When you find an inclusion, increase power and refocus.</span></li>
+          <li><span class="zh">换用亮域照明看色带，换用顶光看表面。</span><span class="en">Switch to brightfield for zoning, overhead light for the surface.</span></li>
+          <li><span class="zh">记录观察结果；关灯、取下宝石。</span><span class="en">Record what you see, switch off and remove the stone.</span></li>
+        </ol>
+        <div class="warn"><span class="zh">⚠️ 欧泊、珍珠等怕热宝石不要长时间放在光源上方。</span><span class="en">⚠️ Do not leave heat-sensitive stones (opal, pearl) over the light for long.</span></div>
+      </div>
+
+      <div class="tab-body" id="tab-parts"><div id="parts-list"></div></div>
+      <div class="tab-body" id="tab-quiz"><div id="quiz"></div></div>
+    </aside>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="assets/js/core.js"></script>
+  <script src="assets/js/gems.js"></script>
+  <script src="assets/js/viewer3d.js"></script>
+  <script src="assets/js/microscope.js"></script>
+</body>
+</html>

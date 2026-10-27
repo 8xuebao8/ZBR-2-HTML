@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>查尔斯滤色镜 Chelsea Filter · 宝石仪器实验室</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="lang-both">
+  <header id="topbar"></header>
+  <main class="inst-layout">
+    <section class="viewer-wrap">
+      <div id="viewer" class="viewer"></div>
+      <div class="viewer-badge" id="badge"></div>
+      <div class="viewer-hint"><span class="zh">拖动旋转 · 滚轮缩放 · 点击部件查看名称</span><span class="en">Drag to rotate · scroll to zoom · click a part</span></div>
+      <div id="part-card" class="part-card hidden"></div>
+    </section>
+
+    <aside class="panel">
+      <h1>🔴 <span class="zh">查尔斯滤色镜</span><span class="en">Chelsea Colour Filter</span></h1>
+      <p class="lead zh">一片小小的双色滤光片，只让黄绿光和深红光通过。铬致色的宝石透过它会显出红色，是区分祖母绿与仿制品的快速工具。</p>
+      <p class="lead en">A small filter that passes only yellow-green and deep red light. Chromium-coloured stones look red through it, so it is a quick check for emerald and its imitations.</p>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="sim"><span class="zh">模拟操作</span><span class="en">Simulation</span></button>
+        <button class="tab-btn" data-tab="theory"><span class="zh">原理</span><span class="en">Principle</span></button>
+        <button class="tab-btn" data-tab="steps"><span class="zh">操作与常见反应</span><span class="en">Use &amp; reactions</span></button>
+        <button class="tab-btn" data-tab="parts"><span class="zh">部件</span><span class="en">Parts</span></button>
+        <button class="tab-btn" data-tab="quiz"><span class="zh">测验</span><span class="en">Quiz</span></button>
+      </div>
+
+      <div class="tab-body active" id="tab-sim">
+        <div class="ctrl-group">
+          <div class="ctrl-label"><span><span class="zh">选择宝石</span><span class="en">Choose a gem</span></span></div>
+          <div id="gem-picker"></div>
+        </div>
+        <div class="ctrl-group">
+          <div class="ctrl-label"><span><span class="zh">观察方式</span><span class="en">How you look</span></span></div>
+          <div id="look"></div>
+        </div>
+        <div class="obs">
+          <div class="obs-title"><span><span class="zh">肉眼 vs 滤色镜下</span><span class="en">Naked eye vs through the filter</span></span></div>
+          <canvas id="compare" class="wide" style="height:200px"></canvas>
+        </div>
+        <div id="result" class="result"></div>
+        <div class="obs">
+          <div class="obs-title"><span><span class="zh">滤色镜透过率曲线</span><span class="en">Filter transmission curve</span></span></div>
+          <canvas id="curve" class="wide" style="height:150px"></canvas>
+        </div>
+      </div>
+
+      <div class="tab-body" id="tab-theory">
+        <h3><span class="zh">只透过两段光</span><span class="en">Only two windows of light</span></h3>
+        <p class="zh">查尔斯滤色镜由两种明胶滤片组成，只让约 570nm 附近的黄绿光和 690nm 以上的深红光通过。</p>
+        <p class="en">The Chelsea filter combines two gelatin filters and lets through only yellow-green light around 570 nm and deep red light beyond about 690 nm.</p>
+        <h3><span class="zh">为什么祖母绿会变红？</span><span class="en">Why does emerald turn red?</span></h3>
+        <p class="zh">铬致色的祖母绿吸收黄绿光，却透过深红光。透过滤色镜时黄绿光已被宝石吸收，剩下的只有深红光，所以看起来是红色。而绿色玻璃、绿色电气石等仿制品透过的是黄绿光，所以仍然是绿色。</p>
+        <p class="en">Chromium-coloured emerald absorbs yellow-green but transmits deep red. Through the filter the yellow-green is already gone, so only red remains and the stone looks red. Green glass or tourmaline transmit the yellow-green, so they stay green.</p>
+        <h3><span class="zh">局限性</span><span class="en">Limitations</span></h3>
+        <p class="zh">滤色镜只是辅助工具，不能单独下结论：有些祖母绿（含铁较多，如印度、赞比亚产）不变红，而合成祖母绿反应往往更强。染色翡翠也会变红。</p>
+        <p class="en">It is only a helper, never proof on its own: some iron-rich emeralds (India, Zambia) do not turn red, synthetic emeralds often react more strongly, and dyed jade can turn red too.</p>
+      </div>
+
+      <div class="tab-body" id="tab-steps">
+        <ol class="steps">
+          <li><span class="zh">用强白光（白炽灯或强光手电）从侧上方照亮宝石，背景用暗色。</span><span class="en">Light the stone strongly with white (incandescent) light against a dark background.</span></li>
+          <li><span class="zh">把滤色镜紧贴眼睛。</span><span class="en">Hold the filter close to your eye.</span></li>
+          <li><span class="zh">宝石放在离眼睛约 30–40cm 的地方观察颜色。</span><span class="en">Look at the stone from about 30–40 cm away.</span></li>
+          <li><span class="zh">把观察到的颜色与已知标样比较。</span><span class="en">Compare the colour with known reference stones.</span></li>
+        </ol>
+        <h3><span class="zh">常见反应</span><span class="en">Common reactions</span></h3>
+        <div class="table-scroll"><table class="data">
+          <tr><th><span class="zh">宝石</span><span class="en">Stone</span></th><th><span class="zh">滤色镜下</span><span class="en">Under the filter</span></th></tr>
+          <tr><td><span class="zh">祖母绿</span><span class="en">Emerald</span></td><td><span class="zh">粉红—红色（多数）</span><span class="en">Pink to red (most)</span></td></tr>
+          <tr><td><span class="zh">合成祖母绿</span><span class="en">Synthetic emerald</span></td><td><span class="zh">强红色</span><span class="en">Strong red</span></td></tr>
+          <tr><td><span class="zh">绿色玻璃、绿色电气石</span><span class="en">Green glass, green tourmaline</span></td><td><span class="zh">绿色（不变）</span><span class="en">Green</span></td></tr>
+          <tr><td><span class="zh">红宝石、红色尖晶石</span><span class="en">Ruby, red spinel</span></td><td><span class="zh">鲜红色</span><span class="en">Bright red</span></td></tr>
+          <tr><td><span class="zh">海蓝宝石</span><span class="en">Aquamarine</span></td><td><span class="zh">带绿色调</span><span class="en">Greenish</span></td></tr>
+          <tr><td><span class="zh">合成蓝色尖晶石、钴玻璃</span><span class="en">Synthetic blue spinel, cobalt glass</span></td><td><span class="zh">红色（钴）</span><span class="en">Red (cobalt)</span></td></tr>
+          <tr><td><span class="zh">蓝宝石</span><span class="en">Blue sapphire</span></td><td><span class="zh">暗绿至黑色</span><span class="en">Dark green to black</span></td></tr>
+          <tr><td><span class="zh">染色绿色翡翠</span><span class="en">Dyed green jadeite</span></td><td><span class="zh">可能变红</span><span class="en">May turn red</span></td></tr>
+        </table></div>
+      </div>
+
+      <div class="tab-body" id="tab-parts"><div id="parts-list"></div></div>
+      <div class="tab-body" id="tab-quiz"><div id="quiz"></div></div>
+    </aside>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="assets/js/core.js"></script>
+  <script src="assets/js/gems.js"></script>
+  <script src="assets/js/viewer3d.js"></script>
+  <script src="assets/js/chelsea.js"></script>
+</body>
+</html>

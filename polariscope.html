@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>偏光镜 Polariscope · 宝石仪器实验室</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="lang-both">
+  <header id="topbar"></header>
+  <main class="inst-layout">
+    <section class="viewer-wrap">
+      <div id="viewer" class="viewer"></div>
+      <div class="viewer-badge" id="badge"></div>
+      <div class="viewer-hint"><span class="zh">拖动旋转 · 滚轮缩放 · 点击部件查看名称</span><span class="en">Drag to rotate · scroll to zoom · click a part</span></div>
+      <div id="part-card" class="part-card hidden"></div>
+    </section>
+
+    <aside class="panel">
+      <h1>◐ <span class="zh">偏光镜</span><span class="en">Polariscope</span></h1>
+      <p class="lead zh">由上下两片偏光片组成。转动宝石观察明暗变化，可以快速判断宝石是单折射、双折射还是集合体。</p>
+      <p class="lead en">Two polarizing filters, one above and one below the stone. Watching light and dark as you turn the stone shows whether it is singly refractive, doubly refractive or an aggregate.</p>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="sim"><span class="zh">模拟操作</span><span class="en">Simulation</span></button>
+        <button class="tab-btn" data-tab="theory"><span class="zh">原理</span><span class="en">Principle</span></button>
+        <button class="tab-btn" data-tab="steps"><span class="zh">操作与判读</span><span class="en">Use &amp; results</span></button>
+        <button class="tab-btn" data-tab="parts"><span class="zh">部件</span><span class="en">Parts</span></button>
+        <button class="tab-btn" data-tab="quiz"><span class="zh">测验</span><span class="en">Quiz</span></button>
+      </div>
+
+      <div class="tab-body active" id="tab-sim">
+        <div class="ctrl-group">
+          <div class="ctrl-label"><span><span class="zh">选择宝石</span><span class="en">Choose a gem</span></span></div>
+          <div id="gem-picker"></div>
+        </div>
+        <div class="ctrl-group">
+          <div class="ctrl-label"><span><span class="zh">上偏光片（检偏器）</span><span class="en">Upper filter (analyzer)</span></span></div>
+          <div id="analyzer"></div>
+        </div>
+        <div class="ctrl-group">
+          <div class="ctrl-label"><span><span class="zh">转动载物台</span><span class="en">Rotate the stage</span></span><b id="rot-val">0°</b></div>
+          <input type="range" id="rot" min="0" max="360" step="1" value="0">
+          <div style="margin-top:6px"><label class="check"><input type="checkbox" id="auto"> <span class="zh">自动旋转</span><span class="en">Auto-rotate</span></label>
+          <label class="check"><input type="checkbox" id="cono"> <span class="zh">放上干涉球（锥光镜）</span><span class="en">Add conoscope sphere</span></label></div>
+        </div>
+        <div class="obs">
+          <div class="obs-title"><span><span class="zh">从上方看到的</span><span class="en">View from above</span></span><span id="obs-mode"></span></div>
+          <div class="eyepiece"><canvas id="view"></canvas><div class="vignette"></div></div>
+          <canvas id="meter" class="wide" style="height:46px;margin-top:10px"></canvas>
+        </div>
+        <div class="btn-row"><button class="btn" id="answer">🔎 <span class="zh">显示答案</span><span class="en">Show answer</span></button></div>
+        <div id="result" class="result hidden"></div>
+      </div>
+
+      <div class="tab-body" id="tab-theory">
+        <h3><span class="zh">偏振光</span><span class="en">Polarized light</span></h3>
+        <p class="zh">普通光在各个方向振动。经过偏光片后，只剩一个方向振动的光，叫“平面偏振光”。当上下两片偏光片的振动方向互相垂直（正交）时，光线完全通不过，视域是黑的。</p>
+        <p class="en">Ordinary light vibrates in all directions. A polarizing filter passes only one direction: plane-polarized light. When the two filters are crossed (at 90°), no light gets through and the field is dark.</p>
+        <h3><span class="zh">放进宝石会怎样？</span><span class="en">What does the stone do?</span></h3>
+        <ul>
+          <li class="zh"><b>单折射（均质体）</b>：不改变光的振动方向 → 转动一周始终黑暗。</li>
+          <li class="en"><b>Singly refractive (isotropic)</b>: does not change the light → stays dark all the way round.</li>
+          <li class="zh"><b>双折射（非均质体）</b>：把光分解成两束互相垂直振动的光，部分能通过上偏光片 → 转动 360° 出现<b>四明四暗</b>。</li>
+          <li class="en"><b>Doubly refractive (anisotropic)</b>: splits light into two rays vibrating at right angles, so some gets through → <b>four light and four dark</b> positions per turn.</li>
+          <li class="zh"><b>集合体</b>：由无数取向不同的小晶体组成 → 始终明亮。</li>
+          <li class="en"><b>Aggregate</b>: countless tiny crystals in all orientations → stays light.</li>
+          <li class="zh"><b>异常消光</b>：单折射宝石内部有应力时，出现不规则的明暗斑块或“蛇形”带，但不会规则地四明四暗。</li>
+          <li class="en"><b>Anomalous extinction (ADR)</b>: strain in an isotropic stone gives patchy or snake-like light areas, never a regular four-fold pattern.</li>
+        </ul>
+        <h3><span class="zh">干涉图</span><span class="en">Interference figures</span></h3>
+        <p class="zh">找到双折射宝石的光轴方向后，在宝石上方放一个玻璃干涉球（锥光镜），可以看到干涉图：一轴晶为黑十字加彩色圆环；二轴晶为一或两条弯曲的黑带；石英常见中心无十字的“牛眼”。</p>
+        <p class="en">Looking down an optic axis with a glass conoscope sphere shows an interference figure: uniaxial stones give a black cross with coloured rings; biaxial stones give one or two curved brushes; quartz often gives a “bull’s-eye” with no cross in the centre.</p>
+      </div>
+
+      <div class="tab-body" id="tab-steps">
+        <ol class="steps">
+          <li><span class="zh">打开光源，转动上偏光片至视域最暗（正交位置）。</span><span class="en">Switch on and turn the analyzer until the field is darkest (crossed).</span></li>
+          <li><span class="zh">把宝石放在载物台上，转动 360°，观察明暗变化。</span><span class="en">Place the stone on the stage and turn it 360°, watching for changes.</span></li>
+          <li><span class="zh">在宝石最亮的位置，把上偏光片转到平行位置，再次比较。</span><span class="en">At the brightest position, turn the analyzer parallel and compare.</span></li>
+          <li><span class="zh">换几个方向重复观察（宝石沿光轴方向时双折射宝石也会全暗）。</span><span class="en">Repeat in other directions (a DR stone looks dark when viewed along its optic axis).</span></li>
+          <li><span class="zh">需要时用干涉球寻找干涉图，判断一轴/二轴。</span><span class="en">If needed, use the conoscope to find an interference figure (uniaxial/biaxial).</span></li>
+        </ol>
+        <div class="table-scroll"><table class="data">
+          <tr><th><span class="zh">正交偏光下</span><span class="en">Crossed polars</span></th><th><span class="zh">结论</span><span class="en">Meaning</span></th></tr>
+          <tr><td><span class="zh">始终黑暗</span><span class="en">Always dark</span></td><td><span class="zh">单折射（或沿光轴方向）</span><span class="en">SR (or along an optic axis)</span></td></tr>
+          <tr><td><span class="zh">四明四暗</span><span class="en">4 light / 4 dark</span></td><td><span class="zh">双折射</span><span class="en">DR</span></td></tr>
+          <tr><td><span class="zh">始终明亮</span><span class="en">Always light</span></td><td><span class="zh">集合体（如翡翠、玉髓）</span><span class="en">Aggregate (jadeite, chalcedony)</span></td></tr>
+          <tr><td><span class="zh">不规则斑块/蛇形带</span><span class="en">Patchy / snake bands</span></td><td><span class="zh">异常消光（单折射有应力）</span><span class="en">Anomalous (strained SR)</span></td></tr>
+        </table></div>
+        <p class="note zh" style="margin-top:10px">注意：不透明宝石、颜色太深或内含物太多的宝石无法用偏光镜判断。</p>
+        <p class="note en">Opaque, very dark or heavily included stones cannot be tested.</p>
+      </div>
+
+      <div class="tab-body" id="tab-parts"><div id="parts-list"></div></div>
+      <div class="tab-body" id="tab-quiz"><div id="quiz"></div></div>
+    </aside>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="assets/js/core.js"></script>
+  <script src="assets/js/gems.js"></script>
+  <script src="assets/js/viewer3d.js"></script>
+  <script src="assets/js/polariscope.js"></script>
+</body>
+</html>

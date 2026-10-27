@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>紫外荧光灯 UV Lamp · 宝石仪器实验室</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="lang-both">
+  <header id="topbar"></header>
+  <main class="inst-layout">
+    <section class="viewer-wrap">
+      <div id="viewer" class="viewer"></div>
+      <div class="viewer-badge" id="badge"></div>
+      <div class="viewer-hint"><span class="zh">拖动旋转 · 滚轮缩放 · 点击宝石查看荧光</span><span class="en">Drag to rotate · scroll to zoom · click a stone</span></div>
+      <div id="part-card" class="part-card hidden"></div>
+    </section>
+
+    <aside class="panel">
+      <h1>💡 <span class="zh">紫外荧光灯</span><span class="en">UV Lamp</span></h1>
+      <p class="lead zh">在暗箱中用长波（LW 365nm）和短波（SW 254nm）紫外线照射宝石，观察它们发出的可见光——荧光。</p>
+      <p class="lead en">In a dark viewing cabinet, shine long-wave (LW, 365 nm) and short-wave (SW, 254 nm) ultraviolet light on stones and watch for visible light they give off: fluorescence.</p>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="sim"><span class="zh">模拟操作</span><span class="en">Simulation</span></button>
+        <button class="tab-btn" data-tab="theory"><span class="zh">原理</span><span class="en">Principle</span></button>
+        <button class="tab-btn" data-tab="steps"><span class="zh">操作与安全</span><span class="en">Use &amp; safety</span></button>
+        <button class="tab-btn" data-tab="parts"><span class="zh">部件</span><span class="en">Parts</span></button>
+        <button class="tab-btn" data-tab="quiz"><span class="zh">测验</span><span class="en">Quiz</span></button>
+      </div>
+
+      <div class="tab-body active" id="tab-sim">
+        <div class="ctrl-group">
+          <div class="ctrl-label"><span><span class="zh">紫外灯开关</span><span class="en">Lamp switch</span></span></div>
+          <div id="mode"></div>
+        </div>
+        <div class="ctrl-group">
+          <label class="check"><input type="checkbox" id="room" checked> <span class="zh">关闭室内灯（暗室观察）</span><span class="en">Room lights off (dark room)</span></label>
+        </div>
+        <div class="warn" id="sw-warn"><span class="zh">⚠️ 短波紫外线会伤害眼睛和皮肤：不要直视灯管，不要把手伸进照射区。</span><span class="en">⚠️ Short-wave UV harms eyes and skin: never look at the tube or put your hands in the beam.</span></div>
+        <div class="ctrl-group">
+          <div class="ctrl-label"><span><span class="zh">点选宝石查看详情（3D 中也可直接点击）</span><span class="en">Pick a stone for details (or click it in 3D)</span></span></div>
+          <div id="gem-picker"></div>
+        </div>
+        <div id="result" class="result"></div>
+        <div class="table-scroll"><table class="data" id="table"></table></div>
+      </div>
+
+      <div class="tab-body" id="tab-theory">
+        <h3><span class="zh">什么是荧光？</span><span class="en">What is fluorescence?</span></h3>
+        <p class="zh">紫外线人眼看不见。某些宝石中的原子（如铬、某些缺陷或杂质）吸收紫外线的能量后，会放出能量较低的可见光，这就是荧光。关掉紫外灯后还持续发光的叫“磷光”。</p>
+        <p class="en">We cannot see UV. Some atoms in a gem (chromium, certain defects or impurities) absorb UV energy and give it back as lower-energy visible light: fluorescence. A glow that continues after the lamp is switched off is phosphorescence.</p>
+        <h3><span class="zh">长波与短波</span><span class="en">Long-wave and short-wave</span></h3>
+        <ul>
+          <li class="zh"><b>长波 LW 365nm</b>：能量较低，荧光通常较强，大多数宝石用它观察。</li>
+          <li class="en"><b>LW 365 nm</b>: lower energy; fluorescence is usually stronger and it is used most.</li>
+          <li class="zh"><b>短波 SW 254nm</b>：能量较高，可帮助区分某些合成宝石（如合成红宝石、合成蓝宝石常有白垩状荧光）。</li>
+          <li class="en"><b>SW 254 nm</b>: higher energy; helps detect some synthetics (synthetic ruby and sapphire often glow chalky).</li>
+        </ul>
+        <h3><span class="zh">铁会“熄灭”荧光</span><span class="en">Iron quenches fluorescence</span></h3>
+        <p class="zh">含铁多的宝石（蓝宝石、铁铝榴石、橄榄石）通常没有荧光。所以泰国红宝石（含铁）荧光弱，缅甸红宝石荧光强。</p>
+        <p class="en">Iron-rich stones (sapphire, almandine, peridot) are usually inert. That is why iron-bearing Thai rubies fluoresce weakly and Burmese rubies strongly.</p>
+        <p class="note zh">“荧光 fluorescence” 一词就来自萤石（fluorite）。</p>
+        <p class="note en">The word “fluorescence” comes from fluorite.</p>
+      </div>
+
+      <div class="tab-body" id="tab-steps">
+        <ol class="steps">
+          <li><span class="zh">在暗室中使用，让眼睛适应黑暗 1–2 分钟。</span><span class="en">Work in a dark room and let your eyes adapt for 1–2 minutes.</span></li>
+          <li><span class="zh">把宝石放在暗箱里的黑色无荧光底板上。</span><span class="en">Place the stone on a black, non-fluorescent tray inside the cabinet.</span></li>
+          <li><span class="zh">先开长波，观察荧光颜色和强弱（无、弱、中、强）。</span><span class="en">Switch on LW first; note the colour and strength (inert, weak, moderate, strong).</span></li>
+          <li><span class="zh">再换短波，比较两者有何不同。</span><span class="en">Then switch to SW and compare.</span></li>
+          <li><span class="zh">关灯后观察是否有磷光。</span><span class="en">Switch off and check for phosphorescence.</span></li>
+          <li><span class="zh">与已知标样对比，记录结果。</span><span class="en">Compare with known reference stones and record the result.</span></li>
+        </ol>
+        <div class="warn"><span class="zh">⚠️ 短波紫外线可伤害眼睛（角膜炎）和皮肤。务必通过暗箱观察窗观察，必要时戴防紫外眼镜。</span><span class="en">⚠️ SW UV can burn the eyes and skin. Always look through the cabinet window and wear UV-blocking glasses if needed.</span></div>
+        <p class="note zh">荧光只能作为辅助证据：同一种宝石的荧光会因产地、杂质而不同。</p>
+        <p class="note en">Fluorescence is only supporting evidence: the same gem can vary by locality and impurities.</p>
+      </div>
+
+      <div class="tab-body" id="tab-parts"><div id="parts-list"></div></div>
+      <div class="tab-body" id="tab-quiz"><div id="quiz"></div></div>
+    </aside>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="assets/js/core.js"></script>
+  <script src="assets/js/gems.js"></script>
+  <script src="assets/js/viewer3d.js"></script>
+  <script src="assets/js/uv.js"></script>
+</body>
+</html>

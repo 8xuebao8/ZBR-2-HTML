@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>静水力学天平 Hydrostatic Balance · 宝石仪器实验室</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="lang-both">
+  <header id="topbar"></header>
+  <main class="inst-layout">
+    <section class="viewer-wrap">
+      <div id="viewer" class="viewer"></div>
+      <div class="viewer-badge" id="badge"></div>
+      <div class="viewer-hint"><span class="zh">拖动旋转 · 滚轮缩放 · 点击部件查看名称</span><span class="en">Drag to rotate · scroll to zoom · click a part</span></div>
+      <div id="part-card" class="part-card hidden"></div>
+    </section>
+
+    <aside class="panel">
+      <h1>⚖️ <span class="zh">静水力学天平</span><span class="en">Hydrostatic Balance</span></h1>
+      <p class="lead zh">分别在空气中和水中称量宝石，利用阿基米德原理算出相对密度（SG）。不同宝石的相对密度差别明显，是很好的鉴定依据。</p>
+      <p class="lead en">Weigh the stone in air and in water, then use Archimedes’ principle to work out its specific gravity (SG). SG varies a lot between gems, which makes it a useful identification test.</p>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="sim"><span class="zh">模拟操作</span><span class="en">Simulation</span></button>
+        <button class="tab-btn" data-tab="theory"><span class="zh">原理</span><span class="en">Principle</span></button>
+        <button class="tab-btn" data-tab="steps"><span class="zh">操作步骤</span><span class="en">How to use</span></button>
+        <button class="tab-btn" data-tab="parts"><span class="zh">部件</span><span class="en">Parts</span></button>
+        <button class="tab-btn" data-tab="quiz"><span class="zh">测验</span><span class="en">Quiz</span></button>
+      </div>
+
+      <div class="tab-body active" id="tab-sim">
+        <div class="ctrl-group">
+          <div class="ctrl-label"><span><span class="zh">选择宝石（“未知宝石”用来练习鉴定）</span><span class="en">Choose a gem (“Mystery stone” for practice)</span></span></div>
+          <div id="gem-picker"></div>
+        </div>
+        <div class="ctrl-group">
+          <div class="ctrl-label"><span><span class="zh">操作</span><span class="en">Actions</span></span></div>
+          <div class="btn-row">
+            <button class="btn" id="b-tare">0️⃣ <span class="zh">归零（去皮）</span><span class="en">Tare</span></button>
+            <button class="btn" id="b-air">⬆️ <span class="zh">放到空气盘</span><span class="en">Put on air pan</span></button>
+            <button class="btn" id="b-water">💧 <span class="zh">放入水中吊篮</span><span class="en">Put in water basket</span></button>
+            <button class="btn" id="b-off">↩️ <span class="zh">取下宝石</span><span class="en">Remove stone</span></button>
+          </div>
+        </div>
+        <div class="obs" style="text-align:center">
+          <div class="obs-title"><span><span class="zh">天平读数</span><span class="en">Balance reading</span></span><span id="where"></span></div>
+          <div id="display" style="font:700 40px ui-monospace,Menlo,monospace;color:#8dff9a;background:#0d1a10;border-radius:8px;padding:10px 0;letter-spacing:2px"></div>
+        </div>
+        <div class="table-scroll" style="margin-bottom:10px"><table class="data">
+          <tr><th><span class="zh">空气中重量 A</span><span class="en">Weight in air A</span></th><th><span class="zh">水中重量 W</span><span class="en">Weight in water W</span></th></tr>
+          <tr><td class="num" id="valA">—</td><td class="num" id="valW">—</td></tr>
+        </table></div>
+        <div class="ctrl-group">
+          <div class="ctrl-label"><span>SG = A ÷ (A − W)</span></div>
+          <div class="btn-row" style="align-items:center">
+            <input type="number" id="ans" step="0.01" placeholder="SG = ?">
+            <button class="btn primary" id="check"><span class="zh">检查答案</span><span class="en">Check</span></button>
+            <button class="btn" id="reveal"><span class="zh">看计算过程</span><span class="en">Show working</span></button>
+          </div>
+        </div>
+        <div id="result" class="result hidden"></div>
+        <p class="note zh">提示：先归零，再分别记下空气中和水中的读数。没归零就称，读数会有偏差。</p>
+        <p class="note en">Tip: tare first, then note the readings in air and in water. Forget to tare and the readings will be off.</p>
+      </div>
+
+      <div class="tab-body" id="tab-theory">
+        <h3><span class="zh">什么是相对密度（SG）？</span><span class="en">What is specific gravity?</span></h3>
+        <p class="zh">相对密度 = 宝石的重量 ÷ 同体积水的重量。它没有单位。例如钻石 SG 3.52，表示钻石比同样大小的水重 3.52 倍。</p>
+        <p class="en">SG = weight of the stone ÷ weight of an equal volume of water. It has no units: diamond’s SG of 3.52 means it is 3.52 times heavier than the same volume of water.</p>
+        <h3><span class="zh">阿基米德原理</span><span class="en">Archimedes’ principle</span></h3>
+        <p class="zh">物体浸入水中会受到向上的浮力，大小等于它排开的水的重量。所以“空气中重量 − 水中重量”就是同体积水的重量。</p>
+        <p class="en">An object in water is pushed up by a force equal to the weight of water it displaces. So “weight in air − weight in water” equals the weight of an equal volume of water.</p>
+        <div class="result"><b>SG = A ÷ (A − W)</b><br><span class="zh">A = 空气中重量，W = 水中重量</span><span class="en">A = weight in air, W = weight in water</span></div>
+        <h3><span class="zh">常见宝石相对密度</span><span class="en">Typical SG values</span></h3>
+        <div class="table-scroll"><table class="data" id="sg-table"></table></div>
+      </div>
+
+      <div class="tab-body" id="tab-steps">
+        <ol class="steps">
+          <li><span class="zh">把天平放平稳，烧杯架跨在秤盘上方，不能碰到秤盘。</span><span class="en">Level the balance; the beaker bridge must straddle the pan without touching it.</span></li>
+          <li><span class="zh">烧杯装蒸馏水，吊篮完全浸在水中，然后归零。</span><span class="en">Fill the beaker with distilled water, immerse the basket fully, then tare.</span></li>
+          <li><span class="zh">把干净干燥的宝石放在上面的空气盘里，记下读数 A。</span><span class="en">Put the clean, dry stone on the upper (air) pan and note reading A.</span></li>
+          <li><span class="zh">把宝石移到水中的吊篮里，用针赶走表面的气泡，记下读数 W。</span><span class="en">Move it to the basket in the water, brush away any bubbles, and note reading W.</span></li>
+          <li><span class="zh">用公式 SG = A ÷ (A − W) 计算，保留两位小数。</span><span class="en">Calculate SG = A ÷ (A − W) to two decimals.</span></li>
+        </ol>
+        <div class="warn"><span class="zh">⚠️ 误差来源：气泡、水的表面张力、温度、宝石太小（小于 1ct 误差大）。多孔宝石（如欧泊、绿松石）不宜放入水中。</span><span class="en">⚠️ Sources of error: bubbles, surface tension, temperature, very small stones (under 1 ct). Do not immerse porous stones such as opal or turquoise.</span></div>
+      </div>
+
+      <div class="tab-body" id="tab-parts"><div id="parts-list"></div></div>
+      <div class="tab-body" id="tab-quiz"><div id="quiz"></div></div>
+    </aside>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="assets/js/core.js"></script>
+  <script src="assets/js/gems.js"></script>
+  <script src="assets/js/viewer3d.js"></script>
+  <script src="assets/js/balance.js"></script>
+</body>
+</html>

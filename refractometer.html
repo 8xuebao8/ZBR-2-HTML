@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>折射仪 Refractometer · 宝石仪器实验室</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="lang-both">
+  <header id="topbar"></header>
+  <main class="inst-layout">
+    <section class="viewer-wrap">
+      <div id="viewer" class="viewer"></div>
+      <div class="viewer-badge" id="badge"></div>
+      <div class="viewer-hint"><span class="zh">拖动旋转 · 滚轮缩放 · 点击部件查看名称</span><span class="en">Drag to rotate · scroll to zoom · click a part</span></div>
+      <div id="part-card" class="part-card hidden"></div>
+    </section>
+
+    <aside class="panel">
+      <h1>📏 <span class="zh">折射仪</span><span class="en">Refractometer</span></h1>
+      <p class="lead zh">利用“全反射临界角”测量宝石的折射率（RI），是最常用、最有说服力的鉴定仪器之一。</p>
+      <p class="lead en">Measures refractive index (RI) using the critical angle of total internal reflection: one of the most useful identification instruments.</p>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="sim"><span class="zh">模拟操作</span><span class="en">Simulation</span></button>
+        <button class="tab-btn" data-tab="theory"><span class="zh">原理</span><span class="en">Principle</span></button>
+        <button class="tab-btn" data-tab="steps"><span class="zh">读数方法</span><span class="en">Reading</span></button>
+        <button class="tab-btn" data-tab="parts"><span class="zh">部件</span><span class="en">Parts</span></button>
+        <button class="tab-btn" data-tab="quiz"><span class="zh">测验</span><span class="en">Quiz</span></button>
+      </div>
+
+      <div class="tab-body active" id="tab-sim">
+        <div class="ctrl-group">
+          <div class="ctrl-label"><span><span class="zh">选择宝石</span><span class="en">Choose a gem</span></span></div>
+          <div id="gem-picker"></div>
+        </div>
+        <div class="ctrl-group">
+          <div class="ctrl-label"><span><span class="zh">准备步骤（按顺序点击）</span><span class="en">Set-up steps (click in order)</span></span>
+            <button class="btn" id="quick" style="padding:2px 10px;font-size:12px">⚡ <span class="zh">一键准备</span><span class="en">Quick set-up</span></button></div>
+          <div id="steps"></div>
+        </div>
+        <div class="ctrl-group">
+          <div class="ctrl-label"><span><span class="zh">在棱镜上转动宝石</span><span class="en">Rotate the stone on the prism</span></span><b id="rot-val">0°</b></div>
+          <input type="range" id="rot" min="0" max="180" step="5" value="0">
+        </div>
+        <div class="ctrl-group" id="spot-group">
+          <div class="ctrl-label"><span><span class="zh">点测法：上下移动视线</span><span class="en">Spot method: move your eye up/down</span></span></div>
+          <input type="range" id="spot" min="1.50" max="1.80" step="0.005" value="1.58">
+        </div>
+        <div class="ctrl-group">
+          <div class="ctrl-label"><span><span class="zh">目镜偏光片</span><span class="en">Polarizing filter on eyepiece</span></span></div>
+          <div id="pol"></div>
+        </div>
+        <label class="check"><input type="checkbox" id="exact"> <span class="zh">显示精确读数（先自己读，再核对）</span><span class="en">Show exact values (read first, then check)</span></label>
+
+        <div class="obs">
+          <div class="obs-title"><span><span class="zh">目镜中的刻度</span><span class="en">Scale seen in the eyepiece</span></span><span id="obs-mode"></span></div>
+          <div class="eyepiece"><canvas id="scale"></canvas><div class="vignette"></div></div>
+        </div>
+
+        <div class="btn-row" style="margin-bottom:8px">
+          <button class="btn primary" id="rec">📝 <span class="zh">记录本次读数</span><span class="en">Record reading</span></button>
+          <button class="btn" id="clear"><span class="zh">清空记录</span><span class="en">Clear</span></button>
+        </div>
+        <div class="table-scroll"><table class="data" id="records"></table></div>
+        <div id="interp" class="result"></div>
+      </div>
+
+      <div class="tab-body" id="tab-theory">
+        <h3><span class="zh">全反射与临界角</span><span class="en">Total internal reflection</span></h3>
+        <p class="zh">光从高折射率介质（折射仪的玻璃棱镜，n≈1.86–1.89）射向低折射率介质（宝石）时，入射角大于“临界角”的光会被全部反射回来。临界角的大小只取决于两者折射率之比，所以只要找到明暗分界的位置，就知道宝石的折射率。</p>
+        <p class="en">Light travelling from a high-RI glass prism (n ≈ 1.86–1.89) into a lower-RI gem is totally reflected beyond the critical angle. That angle depends only on the two RIs, so the position of the light/dark boundary (the “shadow edge”) gives the gem’s RI.</p>
+        <h3><span class="zh">测量范围</span><span class="en">Range</span></h3>
+        <p class="zh">常规折射仪量程约 1.35–1.81，上限受接触液（约 1.79–1.81）限制。钻石（2.417）等高折射率宝石会“超出量程（OTL）”，只能看到接触液的界线。</p>
+        <p class="en">The usual range is about 1.35–1.81, limited by the contact liquid (≈1.79–1.81). High-RI stones such as diamond (2.417) are “over the limit” (OTL): you only see the liquid’s line.</p>
+        <h3><span class="zh">光源</span><span class="en">Light</span></h3>
+        <p class="zh">标准读数使用波长 589nm 的黄色单色光（钠光），阴影边清晰。白光下边界会变成彩色带，读数不准确。</p>
+        <p class="en">Standard readings use 589 nm yellow (sodium) light, which gives a sharp edge. In white light the edge becomes a coloured band.</p>
+        <h3><span class="zh">单折射与双折射</span><span class="en">Single vs double refraction</span></h3>
+        <ul>
+          <li class="zh">单折射宝石：转动宝石始终只有一条阴影边。</li><li class="en">Singly refractive: one shadow edge that never moves.</li>
+          <li class="zh">一轴晶：两条边，其中一条固定不动（ω），另一条随转动移动（ε）。移动的边向高值方向移动 → 正光性(+)；向低值方向 → 负光性(−)。</li>
+          <li class="en">Uniaxial: two edges; one stays still (ω), the other moves (ε). If the moving edge moves to higher values the stone is positive (+), to lower values negative (−).</li>
+          <li class="zh">二轴晶：两条边都会移动。</li><li class="en">Biaxial: both edges move.</li>
+          <li class="zh">双折射率（DR）= 最大读数 − 最小读数。</li><li class="en">Birefringence (DR) = highest reading − lowest reading.</li>
+        </ul>
+      </div>
+
+      <div class="tab-body" id="tab-steps">
+        <ol class="steps">
+          <li><span class="zh">用酒精清洁棱镜和宝石台面。</span><span class="en">Clean the prism and the gem’s table with alcohol.</span></li>
+          <li><span class="zh">在棱镜中央点一小滴接触液（不要太多）。</span><span class="en">Put a tiny drop of contact liquid in the middle of the prism.</span></li>
+          <li><span class="zh">把宝石最大、最平的刻面（台面）朝下，轻轻放在液滴上，推到棱镜中央。</span><span class="en">Place the stone table-down on the drop and slide it to the centre.</span></li>
+          <li><span class="zh">合上盖子，打开 589nm 光源。</span><span class="en">Close the cover and switch on the 589 nm light.</span></li>
+          <li><span class="zh">眼睛离目镜约 25–30cm 时可先找阴影边，再贴近目镜读数，读到小数点后第三位。</span><span class="en">Find the edge, then look closely and read to three decimal places.</span></li>
+          <li><span class="zh">把宝石每次转动约 30°，转满 180°，每次记录读数；必要时加偏光片分辨两条边。</span><span class="en">Turn the stone about 30° at a time through 180°, recording each time. Use the polarizing filter to separate two edges.</span></li>
+          <li><span class="zh">测完后取下宝石，立即擦净棱镜和宝石。</span><span class="en">Remove the stone and clean the prism and stone straight away.</span></li>
+        </ol>
+        <h3><span class="zh">点测法（远视法）</span><span class="en">Spot (distant vision) method</span></h3>
+        <p class="zh">弧面型宝石（如翡翠）没有平的刻面，用极小的一滴液点接触。眼睛离目镜 25–30cm 上下移动，看液滴小像：一半亮一半暗时，对应的刻度就是读数（只读到小数点后两位）。</p>
+        <p class="en">For cabochons (e.g. jadeite) use a tiny drop. Move your eye up and down 25–30 cm from the eyepiece and watch the image of the drop. When it is half light, half dark, read the scale (to two decimals).</p>
+        <div class="warn"><span class="zh">⚠️ 接触液（含二碘甲烷）有毒，避免接触皮肤；棱镜玻璃较软（硬度约 5），不要在上面拖动硬物或划伤。</span><span class="en">⚠️ Contact liquid (diiodomethane) is toxic: avoid skin contact. The prism glass is soft (H ≈ 5): do not scratch it.</span></div>
+      </div>
+
+      <div class="tab-body" id="tab-parts"><div id="parts-list"></div></div>
+      <div class="tab-body" id="tab-quiz"><div id="quiz"></div></div>
+    </aside>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="assets/js/core.js"></script>
+  <script src="assets/js/gems.js"></script>
+  <script src="assets/js/viewer3d.js"></script>
+  <script src="assets/js/refractometer.js"></script>
+</body>
+</html>
