@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>静水力学天平 Hydrostatic Balance · 宝石仪器实验室</title>
-  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/style.css?v=20261109d">
 </head>
 <body class="lang-both">
   <header id="topbar"></header>
@@ -12,7 +12,7 @@
     <section class="viewer-wrap">
       <div id="viewer" class="viewer"></div>
       <div class="viewer-badge" id="badge"></div>
-      <div class="viewer-hint"><span class="zh">拖动旋转 · 滚轮缩放 · 点击部件查看名称</span><span class="en">Drag to rotate · scroll to zoom · click a part</span></div>
+      <div class="viewer-hint"><span class="zh">拖动空白处旋转视角 · 黄点处可直接拖动或点击操作</span><span class="en">Drag empty space to orbit · operate parts at the yellow dots</span></div>
       <div id="part-card" class="part-card hidden"></div>
     </section>
 
@@ -43,7 +43,7 @@
             <button class="btn" id="b-off">↩️ <span class="zh">取下宝石</span><span class="en">Remove stone</span></button>
           </div>
         </div>
-        <div class="obs" style="text-align:center">
+        <div class="obs" data-float style="text-align:center">
           <div class="obs-title"><span><span class="zh">天平读数</span><span class="en">Balance reading</span></span><span id="where"></span></div>
           <div id="display" style="font:700 40px ui-monospace,Menlo,monospace;color:#8dff9a;background:#0d1a10;border-radius:8px;padding:10px 0;letter-spacing:2px"></div>
         </div>
@@ -94,9 +94,10 @@
 
   <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="assets/js/core.js"></script>
-  <script src="assets/js/gems.js"></script>
-  <script src="assets/js/viewer3d.js"></script>
-  <script src="assets/js/balance.js"></script>
+  <script src="assets/js/core.js?v=20261109d"></script>
+  <script src="assets/js/i18n-th.js?v=20261109d"></script>
+  <script src="assets/js/gems.js?v=20261109d"></script>
+  <script src="assets/js/viewer3d.js?v=20261109d"></script>
+  <script src="assets/js/balance.js?v=20261109d"></script>
 </body>
 </html>

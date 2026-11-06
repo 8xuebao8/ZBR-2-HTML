@@ -48,18 +48,20 @@
   const tgtPose = { table: [0, 0.9, 0.6], eye: [0, 0.8, 0] };
 
   let gemObj = null;
+  const gemHolder = new THREE.Group(); // 固定容器 stable container
+  v.add(gemHolder);
   function setGem3D(gem) {
-    if (gemObj) v.scene.remove(gemObj);
+    if (gemObj) gemHolder.remove(gemObj);
     gemObj = G.makeGem(gem, 0.55);
     gemObj.position.set(0, 0.6 + (gem.cut === 'cab' ? 0 : 0.43 * 0.55), 0);
     gemObj.rotation.x = 0.35;
-    v.add(gemObj);
-    v.addPart(gemObj, { zh: '宝石：' + gem.zh, en: 'Stone: ' + gem.en, dzh: '滤色镜下：' + gem.chelsea.zh, den: 'Through the filter: ' + gem.chelsea.en });
+    gemHolder.add(gemObj);
+    v.addPart(gemObj, { zh: '宝石：' + gem.zh, en: 'Stone: ' + gem.en, th: 'อัญมณี: ' + G.th(gem.en), dzh: '滤色镜下：' + gem.chelsea.zh, den: 'Through the filter: ' + gem.chelsea.en, dth: 'ผ่านฟิลเตอร์: ' + G.th(gem.chelsea.en) });
     v.parts = v.parts.filter((p) => p.obj === gemObj || !p.info.zh.startsWith('宝石：'));
   }
 
   /* ================= 状态 State ================= */
-  const st = { gem: null, look: 'naked', moving: false };
+  const st = { gem: null, look: 'naked', moving: false, light: false, looked: false, changes: -1 };
   v.tick((dt, t) => {
     const pose = st.look === 'filter' ? 'eye' : 'table';
     const fp = filterPose[pose];
@@ -100,6 +102,11 @@
     };
     panel(0, ['#e9e6de', '#a7a39a'], gem.css, G.tx('肉眼', 'Naked eye'));
     panel(half, ['#2c4a3c', '#0e1a14'], gem.chelsea.css, G.tx('滤色镜下', 'Through filter'));
+    if (!st.light) {
+      ctx.fillStyle = 'rgba(0,0,0,.85)'; ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = '#ffd166'; ctx.font = '14px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(G.tx('灯关着：没有强光就看不出反应', 'Lamp off: you need strong light to see a reaction'), w / 2, h / 2);
+    }
     ctx.fillStyle = '#0e131b'; ctx.fillRect(half - 1, 0, 2, h);
   }
 
@@ -136,6 +143,8 @@
   function updateUI() {
     const gem = st.gem;
     if (gemObj) G.setGemColor(gemObj, st.look === 'filter' ? gem.chelsea.css : gem.css);
+    spot.intensity = st.light ? 1.4 : 0;
+    bulbMat.emissiveIntensity = st.light ? 1.6 : 0;
     G.$('#badge').innerHTML = T(gem.zh, gem.en) + ' · ' + (st.look === 'filter' ? T('透过滤色镜', 'through filter') : T('肉眼', 'naked eye'));
     const red = ['ruby', 'synruby', 'emerald', 'spinel'].includes(gem.id); // 变红的宝石 stones that turn red
     const box = G.$('#result');
@@ -148,10 +157,46 @@
     drawCurve();
   }
 
-  G.gemPicker(G.$('#gem-picker'), G.gems, (gem) => { st.gem = gem; setGem3D(gem); updateUI(); }, 'emerald');
-  G.seg(G.$('#look'), [{ v: 'naked', zh: '肉眼观察', en: 'Naked eye' }, { v: 'filter', zh: '透过滤色镜看（3D）', en: 'Look through the filter (3D)' }],
+  const picker = G.gemPicker(G.$('#gem-picker'), G.gems, (gem) => { st.gem = gem; st.changes++; setGem3D(gem); updateUI(); }, 'emerald');
+  const segLook = G.seg(G.$('#look'), [{ v: 'naked', zh: '肉眼观察', en: 'Naked eye' }, { v: 'filter', zh: '透过滤色镜看（3D）', en: 'Look through the filter (3D)' }],
     (x) => { st.look = x; st.moving = true; updateUI(); }, 'naked');
   window.addEventListener('resize', updateUI);
+
+  /* ================= 在 3D 模型上直接操作 Operate the 3D model ================= */
+  v.addControl(filter, { hint: ['点击：拿起滤色镜放到眼前 / 放下', 'Click: hold the filter to your eye / put it down'],
+    onClick: () => segLook.set(st.look === 'filter' ? 'naked' : 'filter') });
+  v.addControl(lamp, { hint: ['点击：开 / 关台灯', 'Click: lamp on / off'],
+    onClick: () => { st.light = !st.light; updateUI(); } });
+  v.addControl(gemHolder, { hint: ['点击：肉眼看宝石', 'Click: look at the stone'],
+    onClick: () => { st.looked = true; v.say(T(`${st.gem.zh}：肉眼看是它本来的颜色`, `${st.gem.en}: its normal colour to the eye`, `${G.th(st.gem.en)}: สีปกติเมื่อมองด้วยตาเปล่า`)); } });
+
+  /* ================= 分步指引 Step guide ================= */
+  // 第一步：擦宝石 Step one: wipe the stone
+  const wipe = G.addWipe(v, { getGem: () => gemObj });
+
+  G.guide({
+    viewer: v,
+    reset: () => { wipe.reset(); st.light = false; st.looked = false; st.changes = 0; segLook.set('naked'); updateUI(); },
+    steps: [
+      wipe.step(),
+      { t: ['打开强光台灯', 'Switch on the strong lamp'], how: ['点击左边的台灯', 'Click the desk lamp on the left'],
+        target: lamp, done: () => st.light, act: () => { st.light = true; updateUI(); } },
+      { t: ['先用肉眼看宝石的颜色', 'First look at the stone with the naked eye'], how: ['点击托架上的宝石', 'Click the stone on the stand'],
+        target: gemHolder, done: () => st.looked, act: () => (st.looked = true) },
+      { t: ['把滤色镜贴近眼睛看宝石', 'Hold the filter to your eye and look'], how: ['点击桌上的滤色镜，视角会移到滤色镜后面', 'Click the filter on the bench; the view moves behind it'],
+        target: filter, done: () => st.look === 'filter', act: () => segLook.set('filter') },
+      { t: ['比较颜色：宝石变红了吗？', 'Compare: did the stone turn red?'], how: ['对照右侧“肉眼 vs 滤色镜下”的图和结论', 'Check the side-by-side picture and the result on the right'],
+        target: null,
+        ask: { sig: () => st.gem.id, keepOrder: true, q: ['透过滤色镜看，宝石变红了吗？', 'Through the filter, did the stone turn red?'],
+          o: [['变成红色或粉红色', 'Yes, red or pink'], ['没有变红（绿色、灰色或暗色）', 'No, it stays green, grey or dark']],
+          a: () => { const c = G.hexToRgb(st.gem.chelsea.css); return c[0] > 150 && c[1] < 90 ? 0 : 1; },
+          e: () => [st.gem.chelsea.zh, st.gem.chelsea.en] } },
+      { t: ['换一颗宝石再比较', 'Try another stone and compare'], how: ['在右侧选另一颗宝石，比如祖母绿换成绿色玻璃', 'Pick another stone on the right, e.g. green glass instead of emerald'],
+        target: null, done: () => st.changes >= 1, act: () => picker.select(st.gem.id === 'glass' ? 'emerald' : 'glass') },
+      { t: ['放下滤色镜，关灯', 'Put the filter down and switch off'], how: ['点击滤色镜放下，再点击台灯', 'Click the filter, then click the lamp'],
+        target: filter, done: () => st.look === 'naked' && !st.light, act: () => { segLook.set('naked'); st.light = false; updateUI(); } },
+    ],
+  });
   G.onLang(updateUI);
 
   G.renderParts(G.$('#parts-list'), v);

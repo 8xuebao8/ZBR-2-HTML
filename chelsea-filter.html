@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>查尔斯滤色镜 Chelsea Filter · 宝石仪器实验室</title>
-  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/style.css?v=20261109d">
 </head>
 <body class="lang-both">
   <header id="topbar"></header>
@@ -12,7 +12,7 @@
     <section class="viewer-wrap">
       <div id="viewer" class="viewer"></div>
       <div class="viewer-badge" id="badge"></div>
-      <div class="viewer-hint"><span class="zh">拖动旋转 · 滚轮缩放 · 点击部件查看名称</span><span class="en">Drag to rotate · scroll to zoom · click a part</span></div>
+      <div class="viewer-hint"><span class="zh">拖动空白处旋转视角 · 黄点处可直接拖动或点击操作</span><span class="en">Drag empty space to orbit · operate parts at the yellow dots</span></div>
       <div id="part-card" class="part-card hidden"></div>
     </section>
 
@@ -38,7 +38,7 @@
           <div class="ctrl-label"><span><span class="zh">观察方式</span><span class="en">How you look</span></span></div>
           <div id="look"></div>
         </div>
-        <div class="obs">
+        <div class="obs" data-float>
           <div class="obs-title"><span><span class="zh">肉眼 vs 滤色镜下</span><span class="en">Naked eye vs through the filter</span></span></div>
           <canvas id="compare" class="wide" style="height:200px"></canvas>
         </div>
@@ -89,9 +89,10 @@
 
   <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="assets/js/core.js"></script>
-  <script src="assets/js/gems.js"></script>
-  <script src="assets/js/viewer3d.js"></script>
-  <script src="assets/js/chelsea.js"></script>
+  <script src="assets/js/core.js?v=20261109d"></script>
+  <script src="assets/js/i18n-th.js?v=20261109d"></script>
+  <script src="assets/js/gems.js?v=20261109d"></script>
+  <script src="assets/js/viewer3d.js?v=20261109d"></script>
+  <script src="assets/js/chelsea.js?v=20261109d"></script>
 </body>
 </html>

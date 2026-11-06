@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>折射仪 Refractometer · 宝石仪器实验室</title>
-  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/style.css?v=20261109d">
 </head>
 <body class="lang-both">
   <header id="topbar"></header>
@@ -12,7 +12,7 @@
     <section class="viewer-wrap">
       <div id="viewer" class="viewer"></div>
       <div class="viewer-badge" id="badge"></div>
-      <div class="viewer-hint"><span class="zh">拖动旋转 · 滚轮缩放 · 点击部件查看名称</span><span class="en">Drag to rotate · scroll to zoom · click a part</span></div>
+      <div class="viewer-hint"><span class="zh">拖动空白处旋转视角 · 黄点处可直接拖动或点击操作</span><span class="en">Drag empty space to orbit · operate parts at the yellow dots</span></div>
       <div id="part-card" class="part-card hidden"></div>
     </section>
 
@@ -35,11 +35,6 @@
           <div id="gem-picker"></div>
         </div>
         <div class="ctrl-group">
-          <div class="ctrl-label"><span><span class="zh">准备步骤（按顺序点击）</span><span class="en">Set-up steps (click in order)</span></span>
-            <button class="btn" id="quick" style="padding:2px 10px;font-size:12px">⚡ <span class="zh">一键准备</span><span class="en">Quick set-up</span></button></div>
-          <div id="steps"></div>
-        </div>
-        <div class="ctrl-group">
           <div class="ctrl-label"><span><span class="zh">在棱镜上转动宝石</span><span class="en">Rotate the stone on the prism</span></span><b id="rot-val">0°</b></div>
           <input type="range" id="rot" min="0" max="180" step="5" value="0">
         </div>
@@ -50,10 +45,14 @@
         <div class="ctrl-group">
           <div class="ctrl-label"><span><span class="zh">目镜偏光片</span><span class="en">Polarizing filter on eyepiece</span></span></div>
           <div id="pol"></div>
+          <div id="pol-ang-row" class="hidden" style="margin-top:8px">
+            <div class="ctrl-label"><span><span class="zh">偏光片角度（也可以在 3D 上左右拖动偏光片）</span><span class="en">Filter angle (or drag the filter on the 3D model)</span></span><b id="pol-ang-val">0°</b></div>
+            <input type="range" id="pol-ang" min="0" max="180" step="1" value="0">
+          </div>
         </div>
         <label class="check"><input type="checkbox" id="exact"> <span class="zh">显示精确读数（先自己读，再核对）</span><span class="en">Show exact values (read first, then check)</span></label>
 
-        <div class="obs">
+        <div class="obs" data-float>
           <div class="obs-title"><span><span class="zh">目镜中的刻度</span><span class="en">Scale seen in the eyepiece</span></span><span id="obs-mode"></span></div>
           <div class="eyepiece"><canvas id="scale"></canvas><div class="vignette"></div></div>
         </div>
@@ -109,9 +108,10 @@
 
   <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="assets/js/core.js"></script>
-  <script src="assets/js/gems.js"></script>
-  <script src="assets/js/viewer3d.js"></script>
-  <script src="assets/js/refractometer.js"></script>
+  <script src="assets/js/core.js?v=20261109d"></script>
+  <script src="assets/js/i18n-th.js?v=20261109d"></script>
+  <script src="assets/js/gems.js?v=20261109d"></script>
+  <script src="assets/js/viewer3d.js?v=20261109d"></script>
+  <script src="assets/js/refractometer.js?v=20261109d"></script>
 </body>
 </html>

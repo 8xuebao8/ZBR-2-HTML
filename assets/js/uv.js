@@ -68,14 +68,75 @@
   }
   function partInfo(gem) {
     const lw = strengthWord(gem.uv.lw[0]), sw = strengthWord(gem.uv.sw[0]);
-    return { zh: gem.zh, en: gem.en, dzh: `长波：${lw[0]}；短波：${sw[0]}。${gem.uvNote.zh}`, den: `LW: ${lw[1]}; SW: ${sw[1]}. ${gem.uvNote.en}` };
+    return { zh: gem.zh, en: gem.en, dzh: `长波：${lw[0]}；短波：${sw[0]}。${gem.uvNote.zh}`, den: `LW: ${lw[1]}; SW: ${sw[1]}. ${gem.uvNote.en}`, th: G.th(gem.en), dth: `คลื่นยาว: ${G.th(lw[1])}; คลื่นสั้น: ${G.th(sw[1])}. ${G.th(gem.uvNote.en)}` };
   }
 
   /* ================= 状态 State ================= */
-  const st = { mode: 'off', room: false, sel: null };
+  const st = { mode: 'off', room: true, sel: null, picks: 0 };
+
+  /* ---------- 直视短波灯管会“致盲” Looking straight at the SW tube blinds you ----------
+     短波开着时，视角从下面看到了灯管（中间没有东西挡着）→ 强光一闪，画面发白模糊，几秒后才慢慢恢复
+     With short-wave on, if the view looks up at the bare tube with nothing in between → a flash, then a washed-out blur that slowly fades */
+  const blindFlash = document.createElement('div');
+  blindFlash.className = 'blind-flash';
+  const afterImg = document.createElement('div');
+  afterImg.className = 'blind-after';
+  // 挂在 <html> 上：盖住整个屏幕，而且不会被页面模糊 On <html>: covers the whole screen and is not blurred with the page
+  // 大大的红色警告 A big red warning
+  const blindWarn = document.createElement('div');
+  blindWarn.className = 'blind-warn';
+  // 它在 <body> 外面，语言切换的样式管不到，所以按当前语言直接拼文字 It lives outside <body>, so build the text for the current language
+  const byLang = (zh, en) => { const th = G.th(en); return { zh: [zh], en: [en], th: [th], both: [zh, en], zhth: [zh, th] }[G.lang || 'both'] || [zh, en]; };
+  const drawWarn = () => {
+    const t = byLang('危险！不要直视短波紫外灯！', 'DANGER! Never look at the short-wave UV lamp!');
+    const u = byLang('254nm 短波紫外线会灼伤眼睛和皮肤', '254 nm short-wave UV burns your eyes and skin');
+    blindWarn.innerHTML = `<div class="bw-icon">⚠️</div><div class="bw-title">${t[0]}${t[1] ? `<small>${t[1]}</small>` : ''}</div>
+      <div class="bw-sub">${u.join('<br>')}</div>`;
+  };
+  drawWarn();
+  G.onLang(drawWarn);
+  document.documentElement.append(blindFlash, afterImg, blindWarn);
+  let blind = 0, blindMsgT = 0;
+  const rcB = new THREE.Raycaster(), tubeC = new THREE.Vector3();
+  function seesTube() {
+    if (st.mode !== 'sw') return false;
+    const cam = v.camera.position;
+    if (cam.y > 2.3) return false; // 灯管朝下照，只有从下往上看才会直视 the tube faces down: only looking up at it counts
+    tubeSW.getWorldPosition(tubeC);
+    // 灯管上离视线最近的点 the point on the tube nearest the line of sight
+    const along = G.clamp(cam.x, tubeC.x - 1.0, tubeC.x + 1.0);
+    const target = new THREE.Vector3(along, tubeC.y, tubeC.z);
+    const ndc = target.clone().project(v.camera);
+    if (Math.abs(ndc.x) > 1 || Math.abs(ndc.y) > 1 || ndc.z > 1) return false; // 不在画面里 not in view
+    rcB.set(cam, target.clone().sub(cam).normalize());
+    rcB.camera = v.camera; // 光晕贴片（Sprite）需要相机 sprites need the camera
+    const hit = rcB.intersectObjects([cab, lamp].concat(items.map((i) => i.obj)), true).find((h) => h.object.isMesh);
+    return !!hit && hit.object === tubeSW;
+  }
+  v.tick((dt) => {
+    if (seesTube()) {
+      if (blind < 0.2) {
+        G.shake(v, 0.05, 0.3);
+        v.say('⚠️ ' + G.T('你直视了短波紫外灯！眼睛被灼伤，暂时看不清', 'You looked straight at the short-wave lamp! Your eyes are burnt and you cannot see'));
+        blindMsgT = 3;
+      }
+      blind = 1;
+    } else blind = Math.max(0, blind - dt / 5); // 大约 5 秒慢慢恢复 recovers over about 5 s
+    if (blindMsgT > 0) {
+      blindMsgT -= dt;
+      if (blindMsgT <= 0) v.say('👁️ ' + G.T('短波紫外线会伤眼和皮肤，绝对不要直视灯管', 'Short-wave UV harms eyes and skin: never look at the tube'));
+    }
+    const b = blind;
+    // 整个页面一起模糊、发白 The whole page blurs and washes out
+    document.body.style.filter = b > 0.001 ? `blur(${(b * 10).toFixed(1)}px) brightness(${(1 + b * 1.6).toFixed(2)}) saturate(${(1 - b * 0.7).toFixed(2)})` : '';
+    blindFlash.style.opacity = Math.min(1, b * 1.15).toFixed(2);
+    afterImg.style.opacity = (b * 0.7).toFixed(2);
+    blindWarn.classList.toggle('on', b > 0.25);
+  });
   function apply() {
     const uvOn = st.mode !== 'off';
     const dark = !st.room;
+    const wrap = G.$('.viewer-wrap'); if (wrap) wrap.classList.toggle('dark-room', dark); // 关灯时背景变暗 darker backdrop with lights off
     v.hemi.intensity = dark ? (uvOn ? 0.05 : 0.12) : 0.8;
     v.key.intensity = dark ? 0.02 : 0.95;
     v.fill.intensity = dark ? 0.02 : 0.35;
@@ -118,7 +179,7 @@
       G.gems.map((g) => `<tr><td>${T(g.zh, g.en)}</td><td>${cell(g.uv.lw)}</td><td>${cell(g.uv.sw)}</td></tr>`).join('');
   }
 
-  G.seg(G.$('#mode'), [{ v: 'off', zh: '关闭', en: 'Off' }, { v: 'lw', zh: '长波 LW 365nm', en: '' }, { v: 'sw', zh: '短波 SW 254nm', en: '' }], (x) => { st.mode = x; apply(); }, 'lw');
+  const segMode = G.seg(G.$('#mode'), [{ v: 'off', zh: '关闭', en: 'Off' }, { v: 'lw', zh: '长波 365nm', en: 'Long-wave 365 nm' }, { v: 'sw', zh: '短波 254nm', en: 'Short-wave 254 nm' }], (x) => { st.mode = x; apply(); }, 'off');
   G.$('#room').addEventListener('change', (e) => { st.room = !e.target.checked; apply(); });
   G.gemPicker(G.$('#gem-picker'), G.gems, (gem) => {
     st.sel = gem;
@@ -129,9 +190,56 @@
   v.onPick = (info, obj) => {
     G.showPartCard(info);
     const it = items.find((i) => i.obj === obj);
-    if (it) { st.sel = it.gem; G.$$('#gem-picker .chip').forEach((c) => c.classList.toggle('active', c.dataset.id === it.gem.id)); renderSel(); }
+    if (it) { st.picks++; st.sel = it.gem; G.$$('#gem-picker .chip').forEach((c) => c.classList.toggle('active', c.dataset.id === it.gem.id)); renderSel(); }
   };
   G.onLang(apply);
+
+  /* ================= 在 3D 模型上直接操作 Operate the 3D model ================= */
+  v.addControl(sw, { hint: ['点击：切换 关 → 长波 → 短波', 'Click: switch off → LW → SW'],
+    onClick: () => segMode.set({ off: 'lw', lw: 'sw', sw: 'off' }[st.mode]) });
+  // 墙上的室内灯开关 Room-light switch on the wall
+  const roomSw = G.group(G.box(0.36, 0.5, 0.05, G.mat(0xeeeeee), [0, 0, 0]), G.box(0.1, 0.2, 0.06, G.mat(0xcccccc), [0, 0, 0.03]));
+  roomSw.position.set(-2.75, 1.4, 1.2);
+  roomSw.rotation.y = Math.PI / 2;
+  v.add(roomSw);
+  v.addControl(roomSw, { hint: ['点击：开 / 关室内灯', 'Click: room lights on / off'],
+    onClick: () => { const cb = G.$('#room'); cb.checked = !cb.checked; st.room = !cb.checked; apply(); } });
+
+  /* ================= 分步指引 Step guide ================= */
+  const setRoom = (on) => { G.$('#room').checked = !on; st.room = on; apply(); };
+  /* 观察题：以最后点过的宝石为准 Observation questions use the last stone clicked */
+  const selGem = () => st.sel || G.gemById('fluorite');
+
+  // 第一步：擦宝石 Step one: wipe the stone
+
+  const wipe = G.addWipe(v, { getGems: () => items.map((i) => i.obj) }); // 托盘上的宝石全都是脏的 every stone on the tray is dirty
+
+
+  G.guide({
+    viewer: v,
+    reset: () => { wipe.reset(); setRoom(true); segMode.set('off'); st.picks = 0; },
+    steps: [
+      wipe.step(),
+      { t: ['关闭室内灯，让眼睛适应黑暗', 'Turn off the room lights and let your eyes adapt'], how: ['点击暗箱左边墙上的开关', 'Click the wall switch to the left of the cabinet'],
+        target: roomSw, done: () => !st.room, act: () => setRoom(false) },
+      { t: ['打开长波紫外灯（LW 365nm）', 'Switch on long-wave UV (LW 365 nm)'], how: ['点击暗箱右侧的开关', 'Click the switch on the right of the cabinet'],
+        target: sw, done: () => st.mode === 'lw', act: () => segMode.set('lw') },
+      { t: ['点击一颗发光的宝石，看它的荧光', 'Click a glowing stone to see its fluorescence'], how: ['在 3D 中直接点击托盘上的宝石', 'Click a stone on the tray in 3D'],
+        target: null, done: () => st.picks >= 1, act: () => { st.picks++; G.showPartCard(partInfo(G.gemById('fluorite'))); },
+        ask: { sig: () => selGem().id, keepOrder: true, q: ['长波下，你点的这颗宝石荧光怎样？', 'Under long-wave UV, how does the stone you clicked glow?'],
+          o: [['明显发光（强）', 'Clearly glows (strong)'], ['微弱发光', 'Faint glow'], ['不发光（惰性）', 'No glow (inert)']],
+          a: () => { const k = selGem().uv.lw[0]; return k >= 0.45 ? 0 : k >= 0.08 ? 1 : 2; }, e: () => [selGem().uvNote.zh, selGem().uvNote.en] } },
+      { t: ['切换到短波（SW 254nm），注意安全', 'Switch to short-wave (SW 254 nm), carefully'], how: ['再点击开关；不要直视灯管', 'Click the switch again; never look at the tube'],
+        target: sw, done: () => st.mode === 'sw', act: () => segMode.set('sw') },
+      { t: ['比较长波和短波下的差别', 'Compare long-wave and short-wave'], how: ['看下方表格，注意合成红宝石和钻石的变化', 'Use the table below; note synthetic ruby and diamond'],
+        target: null,
+        ask: { sig: () => selGem().id, keepOrder: true, q: ['比较长波和短波，你点的宝石在哪种下更亮？', 'Comparing LW and SW, under which does your stone glow more?'],
+          o: [['长波更亮', 'Brighter under LW'], ['短波更亮', 'Brighter under SW'], ['差不多（或都不发光）', 'About the same (or no glow)']],
+          a: () => { const u = selGem().uv, d = u.lw[0] - u.sw[0]; return d > 0.12 ? 0 : d < -0.12 ? 1 : 2; }, e: () => [selGem().uvNote.zh, selGem().uvNote.en] } },
+      { t: ['关闭紫外灯', 'Switch off the UV lamp'], how: ['再点击一次开关', 'Click the switch once more'],
+        target: sw, done: () => st.mode === 'off', act: () => segMode.set('off') },
+    ],
+  });
   apply();
 
   G.renderParts(G.$('#parts-list'), { parts: v.parts.slice(0, 4), highlight: (o) => v.highlight(o) });

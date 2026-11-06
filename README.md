@@ -1,14 +1,13 @@
 # 宝石仪器实验室 · Gem Instrument Lab
 
-宝石鉴定仪器的 3D 互动教学网站（中英双语，入门级）。
-Interactive 3D lessons on gem-testing instruments (Chinese / English, beginner level).
+宝石鉴定仪器的 3D 互动教学网站（中文 / English / ไทย，入门级）。每个仪器都有分步指引，可直接在 3D 模型上操作。
+Interactive 3D lessons on gem-testing instruments (Chinese / English / Thai, beginner level), with step-by-step guides and hands-on 3D models.
 
 | 页面 Page | 仪器 Instrument |
 |---|---|
 | `microscope.html` | 宝石显微镜 Gem microscope |
 | `refractometer.html` | 折射仪 Refractometer |
 | `polariscope.html` | 偏光镜 Polariscope |
-| `spectroscope.html` | 分光镜 Spectroscope |
 | `chelsea-filter.html` | 查尔斯滤色镜 Chelsea filter |
 | `uv-lamp.html` | 紫外荧光灯（长波 365nm / 短波 254nm）UV lamp |
 | `hydrostatic-balance.html` | 静水力学天平 Hydrostatic balance |
@@ -28,10 +27,11 @@ Double-click `index.html` (needs internet to load Three.js from the CDN).
 
 ```
 index.html                 首页
-*.html                     七个仪器页面
+*.html                     六个仪器页面
 assets/css/style.css       样式
-assets/js/core.js          双语切换、导航、测验等公共功能
-assets/js/gems.js          宝石数据（RI、SG、光谱、荧光、内含物…）—— 改数据就改这里
+assets/js/core.js          语言切换、导航、分步指引、测验等公共功能
+assets/js/i18n-th.js       泰语词典（按英文原文查找）—— 改泰语就改这里
+assets/js/gems.js          宝石数据（RI、SG、荧光、内含物…）—— 改数据就改这里
 assets/js/viewer3d.js      3D 场景与建模工具
 assets/js/<仪器>.js         每个仪器的 3D 模型和模拟
 ```

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>偏光镜 Polariscope · 宝石仪器实验室</title>
-  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/style.css?v=20261109d">
 </head>
 <body class="lang-both">
   <header id="topbar"></header>
@@ -12,7 +12,7 @@
     <section class="viewer-wrap">
       <div id="viewer" class="viewer"></div>
       <div class="viewer-badge" id="badge"></div>
-      <div class="viewer-hint"><span class="zh">拖动旋转 · 滚轮缩放 · 点击部件查看名称</span><span class="en">Drag to rotate · scroll to zoom · click a part</span></div>
+      <div class="viewer-hint"><span class="zh">拖动空白处旋转视角 · 黄点处可直接拖动或点击操作</span><span class="en">Drag empty space to orbit · operate parts at the yellow dots</span></div>
       <div id="part-card" class="part-card hidden"></div>
     </section>
 
@@ -41,10 +41,9 @@
         <div class="ctrl-group">
           <div class="ctrl-label"><span><span class="zh">转动载物台</span><span class="en">Rotate the stage</span></span><b id="rot-val">0°</b></div>
           <input type="range" id="rot" min="0" max="360" step="1" value="0">
-          <div style="margin-top:6px"><label class="check"><input type="checkbox" id="auto"> <span class="zh">自动旋转</span><span class="en">Auto-rotate</span></label>
-          <label class="check"><input type="checkbox" id="cono"> <span class="zh">放上干涉球（锥光镜）</span><span class="en">Add conoscope sphere</span></label></div>
+          <div style="margin-top:6px"><label class="check"><input type="checkbox" id="auto"> <span class="zh">自动旋转</span><span class="en">Auto-rotate</span></label></div>
         </div>
-        <div class="obs">
+        <div class="obs" data-float>
           <div class="obs-title"><span><span class="zh">从上方看到的</span><span class="en">View from above</span></span><span id="obs-mode"></span></div>
           <div class="eyepiece"><canvas id="view"></canvas><div class="vignette"></div></div>
           <canvas id="meter" class="wide" style="height:46px;margin-top:10px"></canvas>
@@ -68,9 +67,6 @@
           <li class="zh"><b>异常消光</b>：单折射宝石内部有应力时，出现不规则的明暗斑块或“蛇形”带，但不会规则地四明四暗。</li>
           <li class="en"><b>Anomalous extinction (ADR)</b>: strain in an isotropic stone gives patchy or snake-like light areas, never a regular four-fold pattern.</li>
         </ul>
-        <h3><span class="zh">干涉图</span><span class="en">Interference figures</span></h3>
-        <p class="zh">找到双折射宝石的光轴方向后，在宝石上方放一个玻璃干涉球（锥光镜），可以看到干涉图：一轴晶为黑十字加彩色圆环；二轴晶为一或两条弯曲的黑带；石英常见中心无十字的“牛眼”。</p>
-        <p class="en">Looking down an optic axis with a glass conoscope sphere shows an interference figure: uniaxial stones give a black cross with coloured rings; biaxial stones give one or two curved brushes; quartz often gives a “bull’s-eye” with no cross in the centre.</p>
       </div>
 
       <div class="tab-body" id="tab-steps">
@@ -79,7 +75,6 @@
           <li><span class="zh">把宝石放在载物台上，转动 360°，观察明暗变化。</span><span class="en">Place the stone on the stage and turn it 360°, watching for changes.</span></li>
           <li><span class="zh">在宝石最亮的位置，把上偏光片转到平行位置，再次比较。</span><span class="en">At the brightest position, turn the analyzer parallel and compare.</span></li>
           <li><span class="zh">换几个方向重复观察（宝石沿光轴方向时双折射宝石也会全暗）。</span><span class="en">Repeat in other directions (a DR stone looks dark when viewed along its optic axis).</span></li>
-          <li><span class="zh">需要时用干涉球寻找干涉图，判断一轴/二轴。</span><span class="en">If needed, use the conoscope to find an interference figure (uniaxial/biaxial).</span></li>
         </ol>
         <div class="table-scroll"><table class="data">
           <tr><th><span class="zh">正交偏光下</span><span class="en">Crossed polars</span></th><th><span class="zh">结论</span><span class="en">Meaning</span></th></tr>
@@ -99,9 +94,10 @@
 
   <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="assets/js/core.js"></script>
-  <script src="assets/js/gems.js"></script>
-  <script src="assets/js/viewer3d.js"></script>
-  <script src="assets/js/polariscope.js"></script>
+  <script src="assets/js/core.js?v=20261109d"></script>
+  <script src="assets/js/i18n-th.js?v=20261109d"></script>
+  <script src="assets/js/gems.js?v=20261109d"></script>
+  <script src="assets/js/viewer3d.js?v=20261109d"></script>
+  <script src="assets/js/polariscope.js?v=20261109d"></script>
 </body>
 </html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>宝石数据 Gem Data · 宝石仪器实验室</title>
+  <link rel="stylesheet" href="assets/css/style.css?v=20261109d">
+</head>
+<body class="lang-both">
+  <header id="topbar"></header>
+
+  <div class="container data-page">
+    <h2 class="section-title">📊 <span class="zh">本站使用的宝石数据</span><span class="en">Gem data used on this site</span></h2>
+    <div class="table-scroll"><table class="data" id="gem-table"></table></div>
+    <p class="note zh" style="margin-top:8px">数值为入门教学用的典型值，实际宝石会有一定范围的变化。</p>
+    <p class="note en">Values are typical textbook figures for beginners; real stones vary within a range.</p>
+  </div>
+
+  <footer class="footer">
+    <span class="zh">宝石仪器实验室 · 纯静态网页，可直接部署到 GitHub Pages · 3D 引擎 Three.js</span>
+    <span class="en">Gem Instrument Lab · static site for GitHub Pages · 3D by Three.js</span>
+  </footer>
+
+  <script src="assets/js/core.js?v=20261109d"></script>
+  <script src="assets/js/i18n-th.js?v=20261109d"></script>
+  <script src="assets/js/gems.js?v=20261109d"></script>
+  <script>
+    (function () {
+      const G = GemLab, T = G.T;
+      G.buildHeader('gemdata');
+      G.$('#gem-table').innerHTML =
+        `<tr><th>${T('宝石', 'Gem')}</th><th>${T('光性', 'Optic character')}</th><th>RI</th><th>DR</th><th>SG</th>
+         <th>${T('滤色镜', 'Chelsea')}</th><th>${T('长波 LW', 'LW UV')}</th><th>${T('特征内含物', 'Key inclusions')}</th></tr>` +
+        G.gems.map((g) => `<tr>
+          <td><span class="chip" style="pointer-events:none"><span class="dot" style="background:${g.css}"></span>${T(g.zh, g.en)}</span></td>
+          <td>${G.opticText(g)}</td><td class="num">${G.riText(g)}</td>
+          <td class="num">${g.dr ? g.dr.toFixed(3) : '—'}</td><td class="num">${g.sg.toFixed(2)}</td>
+          <td>${T(g.chelsea.zh, g.chelsea.en)}</td><td>${T(g.uvNote.zh.split('，')[0], g.uvNote.en.split(',')[0])}</td>
+          <td>${T(g.incNote.zh, g.incNote.en)}</td></tr>`).join('');
+    })();
+  </script>
+</body>
+</html>

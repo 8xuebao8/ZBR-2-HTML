@@ -40,12 +40,6 @@
   v.add(analyzer);
   v.addPart(analyzer, { zh: '上偏光片（检偏器）', en: 'Upper filter (analyzer)', dzh: '可转动。与下偏光片垂直时为“正交”（视域最暗），平行时视域最亮。', den: 'Can be turned. Crossed with the polarizer the field is darkest; parallel it is brightest.' });
 
-  const cono = new THREE.Group();
-  cono.add(G.sph(0.3, G.glassMat(0xe8f6ff, 0.45), [0, 0, 0]));
-  cono.add(G.rod([0.25, 0.1, 0], [1.5, 0.6, 0.4], 0.03, chrome));
-  cono.position.set(0, 1.4, 0);
-  v.add(cono);
-  v.addPart(cono, { zh: '干涉球（锥光镜）', en: 'Conoscope sphere', dzh: '放在宝石上方的玻璃小球，把会聚的偏振光变成可观察的干涉图。', den: 'A glass sphere held over the stone that turns converging light into a visible interference figure.' });
 
   const beamMat = new THREE.MeshBasicMaterial({ color: 0xfff3d8, transparent: true, opacity: 0.1, blending: THREE.AdditiveBlending, depthWrite: false });
   const beamLow = new THREE.Mesh(new THREE.CylinderGeometry(0.75, 0.75, 0.6, 40, 1, true), beamMat.clone());
@@ -64,7 +58,11 @@
   }
 
   /* ================= 状态与光学 State & optics ================= */
-  const st = { gem: null, rot: 0, ana: 'cross', auto: false, cono: false, seen: new Array(72).fill(null), shown: false };
+  // angA：上偏光片相对下偏光片的角度，90° = 正交 analyzer angle, 90° = crossed
+  const st = { gem: null, rot: 0, angA: 0, light: false, rotTotal: 0, lastRot: 0, auto: false, seen: new Array(72).fill(null), shown: false };
+  let segAna = null;
+  const isCrossed = () => Math.abs(st.angA - 90) < 4;
+  const RAD = Math.PI / 180;
 
   // 正交偏光下的亮度 Brightness between crossed polars (0–1)
   function crossBright(gem, deg) {
@@ -72,9 +70,16 @@
     if (gem.optic === 'AGG') return 0.62;
     return 0.03 + (gem.adr || 0) * (0.5 + 0.5 * Math.sin((deg * Math.PI) / 45)) + (gem.strain ? 0.08 : 0);
   }
+  // 任意上偏光片角度下的亮度（马吕斯定律 + 双折射）Brightness at any analyzer angle
   function viewBright(gem, deg) {
-    const b = crossBright(gem, deg);
-    return st.ana === 'cross' ? b : 1 - b * 0.85;
+    if (!st.light) return 0;
+    const a = st.angA * RAD, c2 = Math.cos(a) ** 2, s2 = Math.sin(a) ** 2;
+    if (gem.optic === 'DR') {
+      const th = (deg + 20) * RAD;
+      return G.clamp(c2 - Math.sin(2 * th) * Math.sin(2 * (th - a)), 0, 1);
+    }
+    if (gem.optic === 'AGG') return 0.55 + 0.1 * c2;
+    return c2 * 0.9 + s2 * crossBright(gem, deg);
   }
 
   v.tick((dt) => {
@@ -84,8 +89,9 @@
       updateUI(true);
     }
     stage.rotation.y = G.approach(stage.rotation.y, (-st.rot * Math.PI) / 180, 10, dt);
-    analyzer.rotation.y = G.approach(analyzer.rotation.y, st.ana === 'cross' ? Math.PI / 2 : 0, 6, dt);
-    cono.visible = st.cono;
+    analyzer.rotation.y = G.approach(analyzer.rotation.y, st.angA * RAD, 10, dt);
+    polMat.emissiveIntensity = st.light ? 0.55 : 0;
+    beamLow.visible = beamUp.visible = st.light;
     const b = viewBright(st.gem, st.rot);
     beamUp.material.opacity = 0.015 + 0.12 * b;
     beamLow.material.opacity = 0.05;
@@ -93,8 +99,6 @@
 
   /* ================= 画面 View ================= */
   const cvs = G.$('#view');
-  const off = document.createElement('canvas');
-  off.width = off.height = 180;
 
   function gemPath(ctx, cx, cy, R, ang) {
     ctx.beginPath();
@@ -110,71 +114,27 @@
     ctx.closePath();
   }
 
-  function drawInterference(gem) {
-    const ox = off.getContext('2d');
-    const N = off.width, img = ox.createImageData(N, N), d = img.data;
-    const th = (st.rot * Math.PI) / 180;
-    const biax = gem.char[0] === 'B';
-    const k = Math.min(gem.dr * 350, 5);
-    const m = 0.38, p1 = [m * Math.cos(th), m * Math.sin(th)];
-    const lam = [0.65, 0.55, 0.45];
-    const parallel = st.ana !== 'cross';
-    for (let j = 0; j < N; j++) {
-      for (let i = 0; i < N; i++) {
-        const x = (i / N) * 2 - 1, y = (j / N) * 2 - 1, rr = x * x + y * y;
-        const o = (j * N + i) * 4;
-        if (rr > 1) { d[o + 3] = 0; continue; }
-        let cross, r;
-        if (biax) {
-          const a1 = Math.atan2(y - p1[1], x - p1[0]), a2 = Math.atan2(y + p1[1], x + p1[0]);
-          const d1 = Math.hypot(x - p1[0], y - p1[1]), d2 = Math.hypot(x + p1[0], y + p1[1]);
-          cross = Math.sin(a1 + a2) ** 2; // sin²(2ψ)，ψ=(a1+a2)/2
-          r = k * d1 * d2 * 1.6;
-        } else {
-          const phi = Math.atan2(y, x);
-          cross = Math.sin(2 * phi) ** 2;
-          r = k * rr;
-          if (gem.bullseye) {
-            const rho = Math.sqrt(rr), t = G.clamp((rho - 0.1) / 0.25, 0, 1);
-            cross = 1 - t + t * cross;
-            r += 0.2;
-          }
-        }
-        for (let c = 0; c < 3; c++) {
-          let I = cross * Math.sin((Math.PI * r) / lam[c]) ** 2;
-          if (parallel) I = 1 - I;
-          d[o + c] = 255 * (0.04 + 0.92 * I);
-        }
-        d[o + 3] = 255;
-      }
-    }
-    ox.putImageData(img, 0, 0);
-  }
-
   function draw() {
     const { ctx, w, h } = G.fitCanvas(cvs);
     const cx = w / 2, cy = h / 2, gem = st.gem;
-    const crossed = st.ana === 'cross';
-    ctx.fillStyle = crossed ? '#06070a' : '#c9ced8';
+    const bg = st.light ? Math.cos(st.angA * RAD) ** 2 : 0;
+    const crossed = bg < 0.5;
+    const wX = Math.sin(st.angA * RAD) ** 2; // 正交效果的强弱 how "crossed" we are
+    ctx.fillStyle = G.rgba(G.mix([6, 7, 10], [201, 206, 216], bg), 1);
     ctx.fillRect(0, 0, w, h);
-
-    if (st.cono && gem.optic === 'DR') {
-      drawInterference(gem);
-      ctx.save();
-      ctx.beginPath(); ctx.arc(cx, cy, w * 0.42, 0, Math.PI * 2); ctx.clip();
-      ctx.drawImage(off, cx - w * 0.42, cy - w * 0.42, w * 0.84, w * 0.84);
-      ctx.restore();
-      ctx.strokeStyle = 'rgba(255,255,255,.25)';
-      ctx.beginPath(); ctx.arc(cx, cy, w * 0.42, 0, Math.PI * 2); ctx.stroke();
+    if (!st.light) {
+      ctx.fillStyle = '#556'; ctx.font = '14px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(G.tx('光源已关闭', 'Light is off'), cx, cy);
       return;
     }
+
 
     const col = G.hexToRgb(gem.css);
     const ang = (-st.rot * Math.PI) / 180;
     const R = w * 0.27;
     const b = viewBright(gem, st.rot);
     const lit = G.mix(col, [255, 255, 255], 0.45);
-    const base = crossed ? G.mix([10, 10, 14], lit, b) : G.mix(G.mix(col, [255, 255, 255], 0.3), [20, 20, 25], 1 - b);
+    const base = G.mix([10, 10, 14], lit, b);
     ctx.save();
     gemPath(ctx, cx, cy, R, ang);
     ctx.fillStyle = G.rgba(base, 1);
@@ -182,31 +142,31 @@
     ctx.clip();
 
     const rnd = G.rng(gem.id);
-    if (crossed && gem.optic === 'AGG') {
+    if (wX > 0.3 && gem.optic === 'AGG') {
       // 集合体：斑驳的亮点 aggregate: mottled grains
       for (let i = 0; i < 260; i++) {
         const x = cx + (rnd() - 0.5) * R * 2.2, y = cy + (rnd() - 0.5) * R * 2.2, ph = rnd() * 6.28;
         const k = 0.5 + 0.5 * Math.sin(ph + (st.rot * Math.PI) / 45);
-        ctx.fillStyle = G.rgba(G.mix([20, 30, 25], lit, 0.4 + 0.6 * k), 0.55);
+        ctx.fillStyle = G.rgba(G.mix([20, 30, 25], lit, 0.4 + 0.6 * k), 0.55 * wX);
         ctx.beginPath(); ctx.arc(x, y, 3 + rnd() * 6, 0, Math.PI * 2); ctx.fill();
       }
     }
-    if (crossed && gem.adr) {
+    if (gem.adr) {
       // 异常消光：不规则亮斑 anomalous extinction: patches
       for (let i = 0; i < 6; i++) {
         const x = cx + (rnd() - 0.5) * R * 1.4, y = cy + (rnd() - 0.5) * R * 1.4, ph = rnd() * 6.28;
         const k = gem.adr * 2.2 * (0.5 + 0.5 * Math.sin(ph + (st.rot * Math.PI) / 60));
         const g = ctx.createRadialGradient(x, y, 0, x, y, R * 0.45);
-        g.addColorStop(0, G.rgba([220, 225, 240], k)); g.addColorStop(1, 'rgba(0,0,0,0)');
+        g.addColorStop(0, G.rgba([220, 225, 240], k * wX)); g.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
       }
     }
-    if (crossed && gem.strain) {
+    if (gem.strain) {
       // 玻璃的蛇形应力带 snake-like strain bands
       ctx.lineWidth = R * 0.12;
       for (let k = 0; k < 4; k++) {
         const a = 0.18 + 0.15 * Math.sin((st.rot * Math.PI) / 90 + k);
-        ctx.strokeStyle = `rgba(200,215,235,${a})`;
+        ctx.strokeStyle = `rgba(200,215,235,${a * wX})`;
         ctx.beginPath();
         for (let x = -1.2; x <= 1.2; x += 0.05) {
           const y = -0.6 + k * 0.4 + 0.15 * Math.sin(x * 3.2 + k * 1.3);
@@ -222,11 +182,6 @@
     ctx.strokeStyle = crossed ? 'rgba(255,255,255,.12)' : 'rgba(0,0,0,.25)';
     ctx.stroke();
 
-    if (st.cono) {
-      ctx.fillStyle = crossed ? '#9aa6b8' : '#333';
-      ctx.font = '13px sans-serif'; ctx.textAlign = 'center';
-      ctx.fillText(G.tx('看不到干涉图', 'No interference figure'), cx, h - 22);
-    }
   }
 
   // 亮度记录条：显示已经转过的角度的亮度 Brightness trace for the angles visited
@@ -252,18 +207,21 @@
   function answerText(gem) {
     const p = gem.polar || (gem.optic === 'DR' ? { zh: '双折射：转动一周四明四暗', en: 'DR: four light / four dark positions per turn' } : { zh: '单折射：转动一周始终黑暗', en: 'SR: stays dark all the way round' });
     let s = `<b>${T(gem.zh, gem.en)}</b>：${T(p.zh, p.en)}<br>${T('光性', 'Optic character')}：${G.opticText(gem)}`;
-    if (gem.optic === 'DR') {
-      const cn = gem.conoNote || (gem.char[0] === 'U' ? { zh: '一轴晶干涉图：黑十字 + 彩色同心圆环', en: 'Uniaxial figure: black cross with coloured rings' } : { zh: '二轴晶干涉图：两个“眼”，转动时黑带分开成弧形', en: 'Biaxial figure: two “eyes”; the brushes split into curves as you rotate' });
-      s += `<br>${T('干涉图', 'Figure')}：${T(cn.zh, cn.en)}`;
-    }
     return s;
   }
 
   function updateUI(fromTick) {
     const idx = Math.floor(st.rot / 5) % 72;
-    if (st.ana === 'cross' && !st.cono) st.seen[idx] = crossBright(st.gem, st.rot);
+    if (isCrossed() && st.light) {
+      st.seen[idx] = crossBright(st.gem, st.rot);
+      st.rotTotal += Math.abs(((st.rot - st.lastRot + 540) % 360) - 180); // 正交下累计转过的角度 total turned while crossed
+    }
+    st.lastRot = st.rot;
+    G.$('#rot').value = Math.round(st.rot);
+    const ap = Math.round(st.angA);
+    if (segAna) segAna.set(isCrossed() ? 'cross' : ap < 4 || ap > 176 ? 'para' : 'none', true);
     G.$('#rot-val').textContent = Math.round(st.rot) + '°';
-    G.$('#obs-mode').innerHTML = (st.ana === 'cross' ? T('正交偏光', 'Crossed') : T('平行偏光', 'Parallel')) + (st.cono ? ' · ' + T('干涉球', 'Conoscope') : '');
+    G.$('#obs-mode').innerHTML = (isCrossed() ? T('正交偏光', 'Crossed') : ap < 4 || ap > 176 ? T('平行偏光', 'Parallel') : T(`上偏光片 ${ap}°`, `Analyzer ${ap}°`, `ฟิลเตอร์บน ${ap}°`));
     G.$('#badge').innerHTML = T(st.gem.zh, st.gem.en) + ' · ' + Math.round(st.rot) + '°';
     if (!fromTick) {
       const r = G.$('#result');
@@ -278,13 +236,53 @@
     st.gem = gem; st.seen.fill(null); st.shown = false;
     setGem3D(gem); updateUI();
   }, 'ruby');
-  G.seg(G.$('#analyzer'), [{ v: 'cross', zh: '正交（暗）', en: 'Crossed (dark)' }, { v: 'para', zh: '平行（亮）', en: 'Parallel (light)' }], (x) => { st.ana = x; updateUI(); }, 'cross');
+  segAna = G.seg(G.$('#analyzer'), [{ v: 'cross', zh: '正交（暗）', en: 'Crossed (dark)' }, { v: 'para', zh: '平行（亮）', en: 'Parallel (light)' }], (x) => { st.angA = x === 'cross' ? 90 : 0; updateUI(); }, 'para');
   G.$('#rot').addEventListener('input', (e) => { st.rot = +e.target.value; updateUI(); });
   G.$('#auto').addEventListener('change', (e) => (st.auto = e.target.checked));
-  G.$('#cono').addEventListener('change', (e) => { st.cono = e.target.checked; updateUI(); });
   G.$('#answer').addEventListener('click', () => { st.shown = !st.shown; updateUI(); });
   window.addEventListener('resize', () => updateUI());
   G.onLang(() => updateUI());
+
+  /* ================= 在 3D 模型上直接操作 Operate the 3D model ================= */
+  v.addControl(stage, { hint: ['左右拖动：转动载物台', 'Drag sideways to turn the stage'],
+    onDrag: (dx) => { st.rot = (st.rot + dx * 0.7 + 360) % 360; updateUI(); } });
+  v.addControl(analyzer, { hint: ['左右拖动：转动上偏光片（看视域明暗变化）', 'Drag sideways to turn the analyzer'],
+    onDrag: (dx) => {
+      let a = (st.angA + dx * 0.4 + 180) % 180;
+      if (Math.abs(a - 90) < 3) a = 90; // 正交附近吸附 snap to crossed
+      st.angA = a; updateUI();
+    } });
+  const swBtn = base.children[1];
+  v.addControl(swBtn, { hint: ['点击：开 / 关光源', 'Click: light on / off'],
+    onClick: () => { st.light = !st.light; updateUI(); } });
+
+  /* ================= 分步指引 Step guide ================= */
+  // 第一步：擦宝石 Step one: wipe the stone
+  const wipe = G.addWipe(v, { getGem: () => gemObj });
+
+  G.guide({
+    viewer: v,
+    reset: () => { wipe.reset(); st.light = false; st.angA = 0; st.rot = 0; st.rotTotal = 0; st.shown = false; st.seen.fill(null); updateUI(); },
+    steps: [
+      wipe.step(),
+      { t: ['打开光源', 'Switch on the light'], how: ['点击底座前面的开关', 'Click the switch on the front of the base'],
+        target: swBtn, done: () => st.light, act: () => { st.light = true; updateUI(); } },
+      { t: ['转动上偏光片，让视域变到最暗（正交）', 'Turn the analyzer until the field is darkest (crossed)'], how: ['左右拖动上面的偏光片，看右侧画面背景变黑', 'Drag the upper filter sideways until the background in the view goes black'],
+        target: analyzer, done: () => isCrossed(), act: () => { st.angA = 90; updateUI(); } },
+      { t: ['转动载物台一整圈（360°）', 'Turn the stage a full circle (360°)'], how: ['左右拖动载物台（或勾选“自动旋转”），留意宝石的明暗变化', 'Drag the stage sideways (or tick Auto-rotate) and watch the stone get lighter and darker'],
+        target: stage, done: () => st.rotTotal >= 355,
+        act: () => { for (let a = 0; a < 360; a += 5) st.seen[a / 5] = crossBright(st.gem, a); st.rotTotal = 360; updateUI(); } },
+      { t: ['判断：四明四暗、始终暗，还是始终亮？', 'Decide: 4 light/4 dark, always dark, or always light?'], how: ['看下方的亮度记录条，然后选择答案', 'Read the brightness trace below, then pick an answer'],
+        target: null, act: () => { st.shown = true; updateUI(); },
+        ask: { sig: () => st.gem.id, keepOrder: true, q: ['正交偏光下转动一整圈，你看到的是？', 'Turning the stone a full circle between crossed polars, what do you see?'],
+          o: [['四明四暗 → 双折射', '4 light / 4 dark → doubly refractive'], ['始终黑暗 → 单折射', 'Always dark → singly refractive'], ['始终明亮 → 集合体', 'Always light → aggregate'],
+            ['暗背景上有不规则亮斑 → 单折射，异常消光', 'Dark with irregular light patches → SR with anomalous extinction']],
+          a: () => { const g = st.gem; return g.optic === 'DR' ? 0 : g.optic === 'AGG' ? 2 : g.adr || g.strain ? [1, 3] : 1; },
+          onRight: () => { st.shown = true; updateUI(); } } },
+      { t: ['关闭光源', 'Switch off the light'], how: ['点击底座前面的开关', 'Click the switch on the front of the base'],
+        target: swBtn, done: () => !st.light, act: () => { st.light = false; updateUI(); } },
+    ],
+  });
 
   G.renderParts(G.$('#parts-list'), v);
   G.renderQuiz(G.$('#quiz'), [
@@ -295,13 +293,10 @@
       o: [['始终黑暗', 'stays dark'], ['四明四暗', 'shows 4 light / 4 dark'], ['始终明亮', 'stays light'], ['变成红色', 'turns red']], a: 2,
       e: ['翡翠是集合体，由许多取向不同的小晶体组成。', 'Jadeite is an aggregate of many randomly oriented crystals.'] },
     { q: ['单折射宝石出现不规则的明暗斑块，这叫？', 'Patchy light areas in an isotropic stone are called…'],
-      o: [['多色性', 'pleochroism'], ['异常消光', 'anomalous extinction'], ['干涉图', 'an interference figure'], ['荧光', 'fluorescence']], a: 1,
+      o: [['多色性', 'pleochroism'], ['异常消光', 'anomalous extinction'], ['变色效应', 'a colour change'], ['荧光', 'fluorescence']], a: 1,
       e: ['由内部应力引起，常见于玻璃、合成尖晶石、石榴石和钻石。', 'Caused by internal strain; common in glass, synthetic spinel, garnet and diamond.'] },
     { q: ['双折射宝石在什么情况下转动也一直黑暗？', 'When can a DR stone stay dark all the way round?'],
       o: [['沿光轴方向观察时', 'when viewed along an optic axis'], ['光源太亮时', 'when the light is too bright'], ['宝石很小时', 'when it is small'], ['从不会', 'never']], a: 0,
       e: ['沿光轴方向光不发生双折射，所以要换几个方向观察。', 'There is no double refraction along an optic axis, so always check several directions.'] },
-    { q: ['一轴晶的干涉图是什么样？', 'A uniaxial interference figure looks like…'],
-      o: [['黑十字 + 彩色圆环', 'a black cross with coloured rings'], ['一片均匀的红色', 'an even red'], ['不规则斑块', 'irregular patches'], ['看不到任何东西', 'nothing at all']], a: 0,
-      e: ['石英比较特别，中心没有黑十字，叫“牛眼”干涉图。', 'Quartz is special: no cross in the centre, the “bull’s-eye”.'] },
   ]);
 })();

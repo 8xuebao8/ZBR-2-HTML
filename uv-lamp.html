@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>紫外荧光灯 UV Lamp · 宝石仪器实验室</title>
-  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/style.css?v=20261109d">
 </head>
 <body class="lang-both">
   <header id="topbar"></header>
@@ -12,7 +12,7 @@
     <section class="viewer-wrap">
       <div id="viewer" class="viewer"></div>
       <div class="viewer-badge" id="badge"></div>
-      <div class="viewer-hint"><span class="zh">拖动旋转 · 滚轮缩放 · 点击宝石查看荧光</span><span class="en">Drag to rotate · scroll to zoom · click a stone</span></div>
+      <div class="viewer-hint"><span class="zh">拖动空白处旋转视角 · 黄点处可操作 · 点击宝石看荧光</span><span class="en">Drag empty space to orbit · use the yellow dots · click a stone</span></div>
       <div id="part-card" class="part-card hidden"></div>
     </section>
 
@@ -35,7 +35,7 @@
           <div id="mode"></div>
         </div>
         <div class="ctrl-group">
-          <label class="check"><input type="checkbox" id="room" checked> <span class="zh">关闭室内灯（暗室观察）</span><span class="en">Room lights off (dark room)</span></label>
+          <label class="check"><input type="checkbox" id="room"> <span class="zh">关闭室内灯（暗室观察）</span><span class="en">Room lights off (dark room)</span></label>
         </div>
         <div class="warn" id="sw-warn"><span class="zh">⚠️ 短波紫外线会伤害眼睛和皮肤：不要直视灯管，不要把手伸进照射区。</span><span class="en">⚠️ Short-wave UV harms eyes and skin: never look at the tube or put your hands in the beam.</span></div>
         <div class="ctrl-group">
@@ -85,9 +85,10 @@
 
   <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="assets/js/core.js"></script>
-  <script src="assets/js/gems.js"></script>
-  <script src="assets/js/viewer3d.js"></script>
-  <script src="assets/js/uv.js"></script>
+  <script src="assets/js/core.js?v=20261109d"></script>
+  <script src="assets/js/i18n-th.js?v=20261109d"></script>
+  <script src="assets/js/gems.js?v=20261109d"></script>
+  <script src="assets/js/viewer3d.js?v=20261109d"></script>
+  <script src="assets/js/uv.js?v=20261109d"></script>
 </body>
 </html>
