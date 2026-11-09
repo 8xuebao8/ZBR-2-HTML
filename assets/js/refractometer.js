@@ -500,8 +500,8 @@
   const surfaces = () => [prismG, body, cloth, v.floor].concat(gemObj ? [gemObj] : []);
   let lastWipe = null;
   v.addControl(tissue, {
-    hint: ['按住拖动：在棱镜和宝石上来回擦', 'Hold and drag: rub over the prism and the stone'],
-    markerIf: () => st.step === 0,
+    get hint() { return G.isFree() && puddles.length ? ['按住拖动：把洒出来的接触液擦掉', 'Hold and drag: wipe up the spilled liquid'] : ['按住拖动：在棱镜和宝石上来回擦', 'Hold and drag: rub over the prism and the stone']; },
+    markerIf: () => st.step === 0 || (G.isFree() && puddles.length > 0), // 有洒出来的液体时也提示 also when liquid has been spilled
     onClick: () => v.say('按住擦拭纸不放，拖到棱镜或宝石上来回擦', 'Hold the tissue and rub it back and forth over the prism or stone'),
     onDragStart: () => { lastWipe = null; },
     onDrag: () => {
@@ -513,6 +513,8 @@
       for (let o = h.object; o; o = o.parent) { if (o === prismG) on = 'prism'; if (o === gemObj) on = 'gem'; }
       if (gemObj && !F.placed && Math.hypot(p.x - gemObj.position.x, p.z - gemObj.position.z) < 0.4) on = 'gem';
       tissue.position.set(p.x, p.y + 0.05, p.z);
+      // 擦拭纸经过洒出来的接触液，就把它吸干 Passing over spilled liquid soaks it up
+      if (lastWipe) mopPuddles(p, Math.min(lastWipe.distanceTo(p), 0.3));
       if (lastWipe && on) {
         const d = Math.min(lastWipe.distanceTo(p), 0.3); // 每次移动的擦拭量 rubbing per move
         if (on === 'prism') {
@@ -542,6 +544,26 @@
   const freeDrops = [];
   function freeDrop() {
     freeDrops.push({ p: dropper.position.clone().add(new THREE.Vector3(0, -0.25, 0)), vy: 0 });
+  }
+  // 用擦拭纸把一滩滩接触液擦掉 Wipe the puddles away with the tissue
+  let mopping = false;
+  function mopPuddles(p, d) {
+    let hit = false;
+    for (let i = puddles.length - 1; i >= 0; i--) {
+      const q = puddles[i], m = q.mesh.position;
+      if (Math.abs(m.y - p.y) > 0.35 || Math.hypot(m.x - p.x, m.z - p.z) > q.r + 0.25) continue;
+      hit = true;
+      q.vol -= d * 5; // 越大的一滩要擦越久 bigger puddles take longer
+      if (q.vol <= 0.3) { v.scene.remove(q.mesh); puddles.splice(i, 1); continue; }
+      q.r = Math.min(1.6, 0.1 * Math.sqrt(q.vol) + 0.06);
+      q.mesh.scale.set(q.r, q.r, 1);
+    }
+    if (hit && !mopping) { mopping = true; v.say('🧻 ' + G.T('正在擦洒出来的接触液', 'Wiping up the spilled liquid')); }
+    if (hit && !puddles.length) {
+      mopping = false;
+      v.say('✨ ' + G.T('洒出来的接触液擦干净了', 'All the spilled liquid is wiped up'));
+      if (!prismVol && !runs.length) sb.fixed(); // 没有别的乱子了 nothing else left to fix
+    }
   }
   function addPuddle(point, amount) {
     let pd = puddles.find((q) => q.mesh.position.distanceTo(point) < q.r + 0.12);

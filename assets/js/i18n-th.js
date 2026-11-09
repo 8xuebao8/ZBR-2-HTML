@@ -1081,6 +1081,10 @@
       "Here is a new stone": "นี่คืออัญมณีเม็ดใหม่",
       "Crunch! The objective crushed the stone!": "กร๊อบ! เลนส์วัตถุกดอัญมณีแตกละเอียด!",
       "The objective is about to hit the stone…": "เลนส์วัตถุกำลังจะกดโดนอัญมณี…",
-      "The stone was crushed: nothing under the lens": "อัญมณีถูกกดแตกแล้ว ใต้เลนส์ไม่มีอะไรเลย"
+      "The stone was crushed: nothing under the lens": "อัญมณีถูกกดแตกแล้ว ใต้เลนส์ไม่มีอะไรเลย",
+      "Hold and drag: wipe up the spilled liquid": "กดค้างแล้วลาก เช็ดน้ำยาที่หกออกมา",
+      "Wiping up the spilled liquid": "กำลังเช็ดน้ำยาที่หกออกมา",
+      "All the spilled liquid is wiped up": "เช็ดน้ำยาที่หกออกมาสะอาดหมดแล้ว",
+      "With the naked eye, what colour is this stone?": "มองด้วยตาเปล่า อัญมณีนี้มีสีอะไร?"
   });
 })();

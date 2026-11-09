@@ -174,6 +174,20 @@
   // 第一步：擦宝石 Step one: wipe the stone
   const wipe = G.addWipe(v, { getGem: () => gemObj });
 
+  /* 观察题：肉眼看到的颜色 Observation question: the colour seen by eye */
+  const COLORS = {
+    red: ['红色', 'Red', 'สีแดง'], green: ['绿色', 'Green', 'สีเขียว'], blue: ['蓝色', 'Blue', 'สีน้ำเงิน'],
+    purple: ['紫色', 'Purple', 'สีม่วง'], none: ['无色', 'Colourless', 'ไม่มีสี'], ygreen: ['黄绿色', 'Yellowish green', 'สีเขียวอมเหลือง'],
+  };
+  const EYE = { ruby: 'red', synruby: 'red', spinel: 'red', almandine: 'red', sapphire: 'blue', emerald: 'green', jadeite: 'green', glass: 'green',
+    diamond: 'none', amethyst: 'purple', fluorite: 'purple', peridot: 'ygreen' };
+  const eyeKey = () => EYE[st.gem.id] || 'red';
+  const eyeOptions = () => {
+    const rnd = G.rng('eye' + st.gem.id);
+    const others = Object.keys(COLORS).filter((k) => k !== eyeKey()).sort(() => rnd() - 0.5).slice(0, 3);
+    return [eyeKey()].concat(others).map((k) => COLORS[k]);
+  };
+
   G.guide({
     viewer: v,
     reset: () => { wipe.reset(); st.light = false; st.looked = false; st.changes = 0; segLook.set('naked'); updateUI(); },
@@ -182,7 +196,9 @@
       { t: ['打开强光台灯', 'Switch on the strong lamp'], how: ['点击左边的台灯', 'Click the desk lamp on the left'],
         target: lamp, done: () => st.light, act: () => { st.light = true; updateUI(); } },
       { t: ['先用肉眼看宝石的颜色', 'First look at the stone with the naked eye'], how: ['点击托架上的宝石', 'Click the stone on the stand'],
-        target: gemHolder, done: () => st.looked, act: () => (st.looked = true) },
+        target: gemHolder, done: () => st.looked, act: () => (st.looked = true),
+        ask: { sig: () => st.gem.id, q: ['肉眼看，这颗宝石是什么颜色？', 'With the naked eye, what colour is this stone?'], o: eyeOptions, a: 0,
+          e: () => { const c = COLORS[eyeKey()]; return ['肉眼下' + st.gem.zh + '是' + c[0] + '。下一步用滤色镜看它会不会变红。', 'By eye the ' + st.gem.en + ' is ' + c[1].toLowerCase() + '. Next, see whether it turns red through the filter.', G.th(st.gem.en) + ' ด้วยตาเปล่าเป็น' + c[2] + ' ต่อไปดูผ่านฟิลเตอร์ว่าจะเปลี่ยนเป็นสีแดงหรือไม่']; } } },
       { t: ['把滤色镜贴近眼睛看宝石', 'Hold the filter to your eye and look'], how: ['点击桌上的滤色镜，视角会移到滤色镜后面', 'Click the filter on the bench; the view moves behind it'],
         target: filter, done: () => st.look === 'filter', act: () => segLook.set('filter') },
       { t: ['比较颜色：宝石变红了吗？', 'Compare: did the stone turn red?'], how: ['对照右侧“肉眼 vs 滤色镜下”的图和结论', 'Check the side-by-side picture and the result on the right'],
@@ -194,7 +210,9 @@
       { t: ['换一颗宝石再比较', 'Try another stone and compare'], how: ['在右侧选另一颗宝石，比如祖母绿换成绿色玻璃', 'Pick another stone on the right, e.g. green glass instead of emerald'],
         target: null, done: () => st.changes >= 1, act: () => picker.select(st.gem.id === 'glass' ? 'emerald' : 'glass') },
       { t: ['放下滤色镜，关灯', 'Put the filter down and switch off'], how: ['点击滤色镜放下，再点击台灯', 'Click the filter, then click the lamp'],
-        target: filter, done: () => st.look === 'naked' && !st.light, act: () => { segLook.set('naked'); st.light = false; updateUI(); } },
+        // 滤色镜还在眼前就指滤色镜，放下了就指台灯 Point at the filter while it is up, then at the lamp
+        get target() { return st.look === 'filter' ? filter : lamp; },
+        done: () => st.look === 'naked' && !st.light, act: () => { segLook.set('naked'); st.light = false; updateUI(); } },
     ],
   });
   G.onLang(updateUI);
